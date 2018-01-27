@@ -68,5 +68,13 @@ func main() {
 		log.WithError(err).Fatal("Unable to configure authentication")
 	}
 
+	http.HandleFunc("/auth", handleAuthRequest)
+	http.HandleFunc("/login", handleLoginRequest)
+	http.HandleFunc("/logout", handleLogoutRequest)
+
 	http.ListenAndServe(fmt.Sprintf("%s:%d", mainCfg.Listen.Addr, mainCfg.Listen.Port), nil)
 }
+
+func handleAuthRequest(res http.ResponseWriter, r *http.Request)   {}
+func handleLoginRequest(res http.ResponseWriter, r *http.Request)  {}
+func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {}
