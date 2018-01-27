@@ -1,9 +1,9 @@
 cookie {
-  domain      = ".example.com"
-  encrypt_key = "Ff1uWJcLouKu9kwxgbnKcU3ps47gps72sxEz79TGHFCpJNCPtiZAFDisM4MWbstH"
-  expire      = 3600                                                               // Optional, default: 3600
-  prefix      = "nginx-sso"                                                        // Optional, default: nginx-sso
-  secure      = true                                                               // Optional, default: false
+  domain             = ".example.com"
+  authentication_key = "Ff1uWJcLouKu9kwxgbnKcU3ps47gps72sxEz79TGHFCpJNCPtiZAFDisM4MWbstH"
+  expire             = 3600                                                               // Optional, default: 3600
+  prefix             = "nginx-sso"                                                        // Optional, default: nginx-sso
+  secure             = true                                                               // Optional, default: false
 }
 
 // Optional, default: 127.0.0.1:8082

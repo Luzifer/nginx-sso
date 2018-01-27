@@ -7,17 +7,18 @@ import (
 	"os"
 
 	"github.com/Luzifer/rconfig"
+	"github.com/gorilla/sessions"
 	"github.com/hashicorp/hcl"
 	log "github.com/sirupsen/logrus"
 )
 
 type mainConfig struct {
 	Cookie struct {
-		Domain     string `hcl:"domain"`
-		EncryptKey string `hcl:"encrypt_key"`
-		Expire     int    `hcl:"expire"`
-		Prefix     string `hcl:"prefix"`
-		Secure     bool   `hcl:"secure"`
+		Domain  string `hcl:"domain"`
+		AuthKey string `hcl:"authentication_key"`
+		Expire  int    `hcl:"expire"`
+		Prefix  string `hcl:"prefix"`
+		Secure  bool   `hcl:"secure"`
 	}
 	Listen struct {
 		Addr string `hcl:"addr"`
@@ -33,7 +34,8 @@ var (
 		VersionAndExit bool   `flag:"version" default:"false" description:"Prints current version and exits"`
 	}{}
 
-	mainCfg = mainConfig{}
+	mainCfg     = mainConfig{}
+	cookieStore *sessions.CookieStore
 
 	version = "dev"
 )
@@ -74,6 +76,8 @@ func main() {
 	if err := initializeAuthenticators(hclSource); err != nil {
 		log.WithError(err).Fatal("Unable to configure authentication")
 	}
+
+	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
 
 	http.HandleFunc("/auth", handleAuthRequest)
 	http.HandleFunc("/login", handleLoginRequest)

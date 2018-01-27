@@ -2,7 +2,9 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/Luzifer/go_helpers/str"
 	"github.com/hashicorp/hcl"
 )
 
@@ -17,13 +19,13 @@ type authSimple struct {
 
 // AuthenticatorID needs to return an unique string to identify
 // this special authenticator
-func (a authSimple) AuthenticatorID() (id string) { return "simple" }
+func (a authSimple) AuthenticatorID() string { return "simple" }
 
 // Configure loads the configuration for the Authenticator from the
 // global config.hcl file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the authenticatorUnconfiguredError
-func (a *authSimple) Configure(hclSource []byte) (err error) {
+func (a *authSimple) Configure(hclSource []byte) error {
 	envelope := struct {
 		Providers struct {
 			Simple *authSimple `hcl:"simple"`
@@ -48,8 +50,25 @@ func (a *authSimple) Configure(hclSource []byte) (err error) {
 // a cookie, header or other methods
 // If no user was detected the noValidUserFoundError needs to be
 // returned
-func (a authSimple) DetectUser(r *http.Request) (user string, groups []string, err error) {
-	return "", nil, noValidUserFoundError
+func (a authSimple) DetectUser(r *http.Request) (string, []string, error) {
+	sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+	if err != nil {
+		return "", nil, noValidUserFoundError
+	}
+
+	user, ok := sess.Values["user"].(string)
+	if !ok {
+		return "", nil, noValidUserFoundError
+	}
+
+	groups := []string{}
+	for group, users := range a.Groups {
+		if str.StringInSlice(user, users) {
+			groups = append(groups, group)
+		}
+	}
+
+	return user, groups, nil
 }
 
 // Login is called when the user submits the login form and needs
