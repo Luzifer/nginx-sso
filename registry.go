@@ -24,7 +24,7 @@ type authenticator interface {
 	// a cookie, header or other methods
 	// If no user was detected the NoValidUserFoundError needs to be
 	// returned
-	DetectUser() (user string, groups []string, err error)
+	DetectUser(r *http.Request) (user string, groups []string, err error)
 
 	// Login is called when the user submits the login form and needs
 	// to authenticate the user or throw an error. If the user has
@@ -94,12 +94,12 @@ func initializeAuthenticators(hclSource []byte) error {
 	return nil
 }
 
-func detectUser() (string, []string, error) {
+func detectUser(r *http.Request) (string, []string, error) {
 	authenticatorRegistryMutex.RLock()
 	defer authenticatorRegistryMutex.RUnlock()
 
 	for _, a := range activeAuthenticators {
-		user, groups, err := a.DetectUser()
+		user, groups, err := a.DetectUser(r)
 		switch err {
 		case nil:
 			return user, groups, err

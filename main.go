@@ -82,6 +82,25 @@ func main() {
 	http.ListenAndServe(fmt.Sprintf("%s:%d", mainCfg.Listen.Addr, mainCfg.Listen.Port), nil)
 }
 
-func handleAuthRequest(res http.ResponseWriter, r *http.Request)   {}
+func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
+	user, groups, err := detectUser(r)
+
+	switch err {
+	case noValidUserFoundError:
+		http.Error(res, "No valid user found", http.StatusUnauthorized)
+
+	case nil:
+		// FIXME (kahlers): Do ACL check here and decide to answer 403
+		_ = groups
+
+		res.Header().Set("X-Username", user)
+		res.WriteHeader(http.StatusOK)
+
+	default:
+		log.WithError(err).Error("Error while handling auth request")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+	}
+}
+
 func handleLoginRequest(res http.ResponseWriter, r *http.Request)  {}
 func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {}

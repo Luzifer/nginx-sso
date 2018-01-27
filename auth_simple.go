@@ -48,7 +48,7 @@ func (a *authSimple) Configure(hclSource []byte) (err error) {
 // a cookie, header or other methods
 // If no user was detected the NoValidUserFoundError needs to be
 // returned
-func (a authSimple) DetectUser() (user string, groups []string, err error) {
+func (a authSimple) DetectUser(r *http.Request) (user string, groups []string, err error) {
 	return "", nil, noValidUserFoundError
 }
 
