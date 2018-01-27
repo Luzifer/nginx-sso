@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type authenticator interface {
@@ -76,7 +78,9 @@ func initializeAuthenticators(hclSource []byte) error {
 		switch err {
 		case nil:
 			activeAuthenticators = append(activeAuthenticators, a)
+			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Activated authenticator")
 		case authenticatorUnconfiguredError:
+			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Authenticator unconfigured")
 			// This is okay.
 		default:
 			return fmt.Errorf("Authenticator configuration caused an error: %s", err)

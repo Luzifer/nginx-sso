@@ -28,6 +28,7 @@ type mainConfig struct {
 var (
 	cfg = struct {
 		ConfigFile     string `flag:"config,c" default:"config.hcl" env:"CONFIG" description:"Location of the configuration file"`
+		LogLevel       string `flag:"log-level" default:"info" description:"Level of logs to display (debug, info, warn, error)"`
 		TemplateDir    string `flag:"frontend-dir" default:"./frontend/" env:"FRONTEND_DIR" description:"Location of the directory containing the web assets"`
 		VersionAndExit bool   `flag:"version" default:"false" description:"Prints current version and exits"`
 	}{}
@@ -39,7 +40,13 @@ var (
 
 func init() {
 	if err := rconfig.Parse(&cfg); err != nil {
-		log.Fatalf("Unable to parse commandline options: %s", err)
+		log.WithError(err).Fatal("Unable to parse commandline options")
+	}
+
+	if l, err := log.ParseLevel(cfg.LogLevel); err != nil {
+		log.WithError(err).Fatal("Unable to parse log level")
+	} else {
+		log.SetLevel(l)
 	}
 
 	if cfg.VersionAndExit {
