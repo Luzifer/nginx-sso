@@ -15,7 +15,7 @@ type mainConfig struct {
 	Cookie struct {
 		Domain     string `hcl:"domain"`
 		EncryptKey string `hcl:"encrypt_key"`
-		Expire     int64  `hcl:"expire"`
+		Expire     int    `hcl:"expire"`
 		Prefix     string `hcl:"prefix"`
 		Secure     bool   `hcl:"secure"`
 	}
