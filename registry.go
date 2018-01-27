@@ -43,6 +43,7 @@ type authenticator interface {
 }
 
 type loginField struct {
+	Label       string
 	Name        string
 	Placeholder string
 	Type        string
