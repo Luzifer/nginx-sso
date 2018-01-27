@@ -22,7 +22,7 @@ func (a authSimple) AuthenticatorID() (id string) { return "simple" }
 // Configure loads the configuration for the Authenticator from the
 // global config.hcl file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the AuthenticatorUnconfiguredError
+// needs to return the authenticatorUnconfiguredError
 func (a *authSimple) Configure(hclSource []byte) (err error) {
 	envelope := struct {
 		Providers struct {
@@ -46,7 +46,7 @@ func (a *authSimple) Configure(hclSource []byte) (err error) {
 
 // DetectUser is used to detect a user without a login form from
 // a cookie, header or other methods
-// If no user was detected the NoValidUserFoundError needs to be
+// If no user was detected the noValidUserFoundError needs to be
 // returned
 func (a authSimple) DetectUser(r *http.Request) (user string, groups []string, err error) {
 	return "", nil, noValidUserFoundError
@@ -56,7 +56,7 @@ func (a authSimple) DetectUser(r *http.Request) (user string, groups []string, e
 // to authenticate the user or throw an error. If the user has
 // successfully logged in the persistent cookie should be written
 // in order to use DetectUser for the next login.
-// If the user did not login correctly the NoValidUserFoundError
+// If the user did not login correctly the noValidUserFoundError
 // needs to be returned
 func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (err error) { return nil }
 
