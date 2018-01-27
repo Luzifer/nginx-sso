@@ -30,7 +30,7 @@ type authenticator interface {
 	// in order to use DetectUser for the next login.
 	// If the user did not login correctly the NoValidUserFoundError
 	// needs to be returned
-	Login(r *http.Request) (err error)
+	Login(res http.ResponseWriter, r *http.Request) (err error)
 
 	// LoginFields needs to return the fields required for this login
 	// method. If no login using this method is possible the function
@@ -39,7 +39,7 @@ type authenticator interface {
 
 	// Logout is called when the user visits the logout endpoint and
 	// needs to destroy any persistent stored cookies
-	Logout() (err error)
+	Logout(res http.ResponseWriter) (err error)
 }
 
 type loginField struct {
@@ -109,12 +109,12 @@ func detectUser() (string, []string, error) {
 	return "", nil, noValidUserFoundError
 }
 
-func loginUser(r *http.Request) error {
+func loginUser(res http.ResponseWriter, r *http.Request) error {
 	authenticatorRegistryMutex.RLock()
 	defer authenticatorRegistryMutex.RUnlock()
 
 	for _, a := range activeAuthenticators {
-		err := a.Login(r)
+		err := a.Login(res, r)
 		switch err {
 		case nil:
 			return nil
