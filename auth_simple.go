@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/hashicorp/hcl"
+)
 
 func init() {
 	registerAuthenticator(&authSimple{})
@@ -19,7 +23,26 @@ func (a authSimple) AuthenticatorID() (id string) { return "simple" }
 // global config.hcl file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the AuthenticatorUnconfiguredError
-func (a *authSimple) Configure(hclSource []byte) (err error) { return nil }
+func (a *authSimple) Configure(hclSource []byte) (err error) {
+	envelope := struct {
+		Providers struct {
+			Simple *authSimple `hcl:"simple"`
+		} `hcl:"providers"`
+	}{}
+
+	if err := hcl.Unmarshal(hclSource, &envelope); err != nil {
+		return err
+	}
+
+	if envelope.Providers.Simple == nil {
+		return authenticatorUnconfiguredError
+	}
+
+	a.Users = envelope.Providers.Simple.Users
+	a.Groups = envelope.Providers.Simple.Groups
+
+	return nil
+}
 
 // DetectUser is used to detect a user without a login form from
 // a cookie, header or other methods
