@@ -82,7 +82,22 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (err error) 
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
 // needs to return nil.
-func (a authSimple) LoginFields() (fields []loginField) { return nil }
+func (a authSimple) LoginFields() (fields []loginField) {
+	return []loginField{
+		{
+			Label:       "Username",
+			Name:        "username",
+			Placeholder: "Username",
+			Type:        "text",
+		},
+		{
+			Label:       "Password",
+			Name:        "password",
+			Placeholder: "****",
+			Type:        "password",
+		},
+	}
+}
 
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies

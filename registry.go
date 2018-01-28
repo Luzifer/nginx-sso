@@ -131,3 +131,18 @@ func loginUser(res http.ResponseWriter, r *http.Request) error {
 
 	return noValidUserFoundError
 }
+
+func getFrontendAuthenticators() map[string][]loginField {
+	authenticatorRegistryMutex.RLock()
+	defer authenticatorRegistryMutex.RUnlock()
+
+	output := map[string][]loginField{}
+	for _, a := range activeAuthenticators {
+		if len(a.LoginFields()) == 0 {
+			continue
+		}
+		output[a.AuthenticatorID()] = a.LoginFields()
+	}
+
+	return output
+}

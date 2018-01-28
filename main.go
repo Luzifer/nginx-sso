@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 
 	"github.com/Luzifer/rconfig"
+	"github.com/flosch/pongo2"
 	"github.com/gorilla/sessions"
 	"github.com/hashicorp/hcl"
 	log "github.com/sirupsen/logrus"
@@ -24,6 +27,11 @@ type mainConfig struct {
 		Addr string `hcl:"addr"`
 		Port int    `hcl:"port"`
 	} `hcl:"listen"`
+	Login struct {
+		Title         string            `hcl:"title"`
+		DefaultMethod string            `hcl:"default_method"`
+		Names         map[string]string `hcl:"names"`
+	} `hcl:"login"`
 }
 
 var (
@@ -106,5 +114,31 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleLoginRequest(res http.ResponseWriter, r *http.Request)  {}
+func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		err := loginUser(res, r)
+		switch err {
+		case noValidUserFoundError:
+			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
+			return
+		case nil:
+			http.Redirect(res, r, r.FormValue("go"), http.StatusFound)
+			return
+		default:
+			log.WithError(err).Error("Login failed with unexpected error")
+			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
+			return
+		}
+	}
+
+	tpl := pongo2.Must(pongo2.FromFile(path.Join(cfg.TemplateDir, "index.html")))
+	if err := tpl.ExecuteWriter(pongo2.Context{
+		"active_methods": getFrontendAuthenticators(),
+		"login":          mainCfg.Login,
+	}, res); err != nil {
+		log.WithError(err).Error("Unable to render template")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+	}
+}
+
 func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {}

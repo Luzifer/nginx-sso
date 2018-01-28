@@ -1,3 +1,13 @@
+login {
+  title          = "luzifer.io"
+  default_method = "simple"
+
+  names {
+    simple  = "Username / Password"
+    yubikey = "Yubikey"
+  }
+}
+
 cookie {
   domain             = ".example.com"
   authentication_key = "Ff1uWJcLouKu9kwxgbnKcU3ps47gps72sxEz79TGHFCpJNCPtiZAFDisM4MWbstH"
