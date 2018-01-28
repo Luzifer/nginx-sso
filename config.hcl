@@ -22,6 +22,22 @@ listen {
   port = 8082
 }
 
+acl {
+  rule_set {
+    rule {
+      field  = "host"
+      equals = "test.example.com"
+    }
+
+    rule {
+      field  = "x-origin-uri"
+      regexp = "^/api"
+    }
+
+    allow = ["luzifer", "@admins"]
+  }
+}
+
 providers {
   // Authentication against an Atlassian Crowd directory server
   // Supports: Users, Groups

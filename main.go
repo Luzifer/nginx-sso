@@ -16,6 +16,7 @@ import (
 )
 
 type mainConfig struct {
+	ACL    acl `hcl:"acl"`
 	Cookie struct {
 		Domain  string `hcl:"domain"`
 		AuthKey string `hcl:"authentication_key"`
@@ -112,8 +113,10 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 		http.Error(res, "No valid user found", http.StatusUnauthorized)
 
 	case nil:
-		// FIXME (kahlers): Do ACL check here and decide to answer 403
-		_ = groups
+		if !mainCfg.ACL.HasAccess(user, groups, r) {
+			http.Error(res, "Access denied for this resource", http.StatusForbidden)
+			return
+		}
 
 		res.Header().Set("X-Username", user)
 		res.WriteHeader(http.StatusOK)
