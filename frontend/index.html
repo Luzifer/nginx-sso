@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>{{ login.Title }}</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+
+    <style>
+      html, body, .container, .row { height: 100%; }
+      .vertical-align { display: flex; flex-direction: column; justify-content: center; }
+      .modal-content { background-color: darkcyan; }
+      .modal-heading h2 { color: white; }
+      .nav-tabs>li>a { color: white; }
+      .nav-tabs>li.active>a, .nav-tabs>li>a:hover { color: #333; }
+      .tab-pane { padding-top: 10px; color: white; }
+    </style>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"
+              integrity="sha256-3Jy/GbSLrg0o9y5Z5n1uw0qxZECH7C6OQpVBgNFYa0g=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"
+              integrity="sha256-g6iAfvZp+nDQ2TdTR/VVKJf3bGro4ub5fvWSWVRi2NE=" crossorigin="anonymous"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+
+      <div class="row vertical-align">
+        <div class="col-md-offset-2 col-md-8">
+
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-heading">
+                <h2 class="text-center">{{ login.Title }}</h2>
+              </div>
+              <hr>
+              <div class="modal-body">
+
+                <!-- Nav tabs -->
+                {% if active_methods | length > 1 %}
+                <ul class="nav nav-tabs" role="tablist">
+                  {% for method in active_methods sorted %}
+                  <li role="presentation" class="{% if method == login.DefaultMethod %}active{% endif %}">
+                    {% for name, desc in login.Names %}{% if method == name %}
+                    <a href="#{{ method }}" aria-controls="{{ method }}" role="tab" data-toggle="tab">{{ desc }}</a>
+                    {% endif %}{% endfor %}
+                  </li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                  {% for method, fields in active_methods sorted %}
+                  <div role="tabpanel" class="tab-pane {% if method == login.DefaultMethod %}active{% endif %}" id="{{ method }}">
+                    <form action="/login" method="post">
+                      {% for field in fields %}
+                      <div class="form-group">
+                        <label for="{{ method }}-{{ field.Name }}">{{ field.Label }}</label>
+                        <input type="{{ field.Type }}" class="form-control" placeholder="{{ field.Placeholder }}"
+                               name="{{ method }}-{{ field.Name }}" id="{{ method }}-{{ field.Name }}" />
+                      </div>
+                      {% endfor %}
+
+                      <div class="form-group text-center">
+                        <button type="submit" class="btn btn-success btn-lg">Login</button>
+                        <input type="hidden" name="go" value="{{ go }}">
+                      </div>
+                    </form>
+                  </div>
+                  {% endfor %}
+                </div>
+
+              </div> <!-- /.panel-body -->
+            </div> <!-- /.modal-content -->
+          </div> <!-- /.modal-dialog -->
+
+        </div> <!-- /.col-md-8 -->
+      </div> <!-- /.row -->
+
+    </div> <!-- /.container -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"
+            integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+
+    <script>
+      $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        $(e.target.hash).find('input:first').focus();
+      })
+    </script>
+  </body>
+</html>
+
