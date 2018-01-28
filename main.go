@@ -98,7 +98,7 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 	user, groups, err := detectUser(r)
 
 	switch err {
-	case noValidUserFoundError:
+	case errNoValidUserFound:
 		http.Error(res, "No valid user found", http.StatusUnauthorized)
 
 	case nil:
@@ -118,7 +118,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		err := loginUser(res, r)
 		switch err {
-		case noValidUserFoundError:
+		case errNoValidUserFound:
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
 		case nil:

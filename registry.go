@@ -17,12 +17,12 @@ type authenticator interface {
 	// Configure loads the configuration for the Authenticator from the
 	// global config.hcl file which is passed as a byte-slice.
 	// If no configuration for the Authenticator is supplied the function
-	// needs to return the authenticatorUnconfiguredError
+	// needs to return the errAuthenticatorUnconfigured
 	Configure(hclSource []byte) (err error)
 
 	// DetectUser is used to detect a user without a login form from
 	// a cookie, header or other methods
-	// If no user was detected the noValidUserFoundError needs to be
+	// If no user was detected the errNoValidUserFound needs to be
 	// returned
 	DetectUser(r *http.Request) (user string, groups []string, err error)
 
@@ -30,7 +30,7 @@ type authenticator interface {
 	// to authenticate the user or throw an error. If the user has
 	// successfully logged in the persistent cookie should be written
 	// in order to use DetectUser for the next login.
-	// If the user did not login correctly the noValidUserFoundError
+	// If the user did not login correctly the errNoValidUserFound
 	// needs to be returned
 	Login(res http.ResponseWriter, r *http.Request) (err error)
 
@@ -52,8 +52,8 @@ type loginField struct {
 }
 
 var (
-	authenticatorUnconfiguredError = errors.New("No valid configuration found for this authenticator")
-	noValidUserFoundError          = errors.New("No valid users found")
+	errAuthenticatorUnconfigured = errors.New("No valid configuration found for this authenticator")
+	errNoValidUserFound          = errors.New("No valid users found")
 
 	authenticatorRegistry      = []authenticator{}
 	authenticatorRegistryMutex sync.RWMutex
@@ -79,7 +79,7 @@ func initializeAuthenticators(hclSource []byte) error {
 		case nil:
 			activeAuthenticators = append(activeAuthenticators, a)
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Activated authenticator")
-		case authenticatorUnconfiguredError:
+		case errAuthenticatorUnconfigured:
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Authenticator unconfigured")
 			// This is okay.
 		default:
@@ -103,14 +103,14 @@ func detectUser(r *http.Request) (string, []string, error) {
 		switch err {
 		case nil:
 			return user, groups, err
-		case noValidUserFoundError:
+		case errNoValidUserFound:
 			// This is okay.
 		default:
 			return "", nil, err
 		}
 	}
 
-	return "", nil, noValidUserFoundError
+	return "", nil, errNoValidUserFound
 }
 
 func loginUser(res http.ResponseWriter, r *http.Request) error {
@@ -122,14 +122,14 @@ func loginUser(res http.ResponseWriter, r *http.Request) error {
 		switch err {
 		case nil:
 			return nil
-		case noValidUserFoundError:
+		case errNoValidUserFound:
 			// This is okay.
 		default:
 			return err
 		}
 	}
 
-	return noValidUserFoundError
+	return errNoValidUserFound
 }
 
 func logoutUser(res http.ResponseWriter, r *http.Request) error {

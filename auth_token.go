@@ -22,7 +22,7 @@ func (a authToken) AuthenticatorID() string { return "token" }
 // Configure loads the configuration for the Authenticator from the
 // global config.hcl file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the authenticatorUnconfiguredError
+// needs to return the errAuthenticatorUnconfigured
 func (a *authToken) Configure(hclSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -35,7 +35,7 @@ func (a *authToken) Configure(hclSource []byte) error {
 	}
 
 	if envelope.Providers.Token == nil {
-		return authenticatorUnconfiguredError
+		return errAuthenticatorUnconfigured
 	}
 
 	a.Tokens = envelope.Providers.Token.Tokens
@@ -45,13 +45,13 @@ func (a *authToken) Configure(hclSource []byte) error {
 
 // DetectUser is used to detect a user without a login form from
 // a cookie, header or other methods
-// If no user was detected the noValidUserFoundError needs to be
+// If no user was detected the errNoValidUserFound needs to be
 // returned
 func (a authToken) DetectUser(r *http.Request) (string, []string, error) {
 	authHeader := r.Header.Get("Authorization")
 
 	if !strings.HasPrefix(authHeader, "Token ") {
-		return "", nil, noValidUserFoundError
+		return "", nil, errNoValidUserFound
 	}
 
 	tmp := strings.SplitN(authHeader, " ", 2)
@@ -63,16 +63,16 @@ func (a authToken) DetectUser(r *http.Request) (string, []string, error) {
 		}
 	}
 
-	return "", nil, noValidUserFoundError
+	return "", nil, errNoValidUserFound
 }
 
 // Login is called when the user submits the login form and needs
 // to authenticate the user or throw an error. If the user has
 // successfully logged in the persistent cookie should be written
 // in order to use DetectUser for the next login.
-// If the user did not login correctly the noValidUserFoundError
+// If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authToken) Login(res http.ResponseWriter, r *http.Request) error { return noValidUserFoundError }
+func (a authToken) Login(res http.ResponseWriter, r *http.Request) error { return errNoValidUserFound }
 
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function

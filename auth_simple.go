@@ -26,7 +26,7 @@ func (a authSimple) AuthenticatorID() string { return "simple" }
 // Configure loads the configuration for the Authenticator from the
 // global config.hcl file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the authenticatorUnconfiguredError
+// needs to return the errAuthenticatorUnconfigured
 func (a *authSimple) Configure(hclSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -39,7 +39,7 @@ func (a *authSimple) Configure(hclSource []byte) error {
 	}
 
 	if envelope.Providers.Simple == nil {
-		return authenticatorUnconfiguredError
+		return errAuthenticatorUnconfigured
 	}
 
 	a.Users = envelope.Providers.Simple.Users
@@ -50,17 +50,17 @@ func (a *authSimple) Configure(hclSource []byte) error {
 
 // DetectUser is used to detect a user without a login form from
 // a cookie, header or other methods
-// If no user was detected the noValidUserFoundError needs to be
+// If no user was detected the errNoValidUserFound needs to be
 // returned
 func (a authSimple) DetectUser(r *http.Request) (string, []string, error) {
 	sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 	if err != nil {
-		return "", nil, noValidUserFoundError
+		return "", nil, errNoValidUserFound
 	}
 
 	user, ok := sess.Values["user"].(string)
 	if !ok {
-		return "", nil, noValidUserFoundError
+		return "", nil, errNoValidUserFound
 	}
 
 	groups := []string{}
@@ -77,7 +77,7 @@ func (a authSimple) DetectUser(r *http.Request) (string, []string, error) {
 // to authenticate the user or throw an error. If the user has
 // successfully logged in the persistent cookie should be written
 // in order to use DetectUser for the next login.
-// If the user did not login correctly the noValidUserFoundError
+// If the user did not login correctly the errNoValidUserFound
 // needs to be returned
 func (a authSimple) Login(res http.ResponseWriter, r *http.Request) error {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
@@ -96,7 +96,7 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) error {
 		return sess.Save(r, res)
 	}
 
-	return noValidUserFoundError
+	return errNoValidUserFound
 }
 
 // LoginFields needs to return the fields required for this login
