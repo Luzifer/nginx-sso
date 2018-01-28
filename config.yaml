@@ -32,6 +32,8 @@ providers:
   # Authentication against embedded user database
   # Supports: Users, Groups
   simple:
+    enable_basic_auth: false
+
     # Unique username mapped to bcrypt hashed password
     users:
       luzifer: "$2a$10$FSGAF8qDWX52aBID8.WpxOyCvfSQ3JIUVFiwyd1jolb4jM3BzJmNu"
