@@ -96,8 +96,6 @@ func main() {
 		log.WithError(err).Fatal("Unable to configure authentication")
 	}
 
-	log.Debugf("maincfg = %#v", mainCfg)
-
 	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
 
 	http.HandleFunc("/auth", handleAuthRequest)
