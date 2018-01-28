@@ -26,9 +26,9 @@ providers {
   // Authentication against an Atlassian Crowd directory server
   // Supports: Users, Groups
   crowd {
-    url  = "https://crowd.example.com/crowd/"
-    user = ""
-    pass = ""
+    url      = "https://crowd.example.com/crowd/"
+    app_name = ""
+    app_pass = ""
   }
 
   // Authentication against embedded user database
