@@ -57,8 +57,9 @@ providers {
   // Authentication against Yubikey cloud validation servers
   // Supports: Users, Groups
   yubikey {
-    api_key            = "foobar"
-    validation_servers = ["myserver.example.com"] // Optional, defaults to Yubico cloud servers
+    // Get your client / secret from https://upgrade.yubico.com/getapikey/
+    client_id  = "12345"
+    secret_key = "foobar"
 
     // First 12 characters of the OTP string mapped to the username
     devices {
