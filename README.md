@@ -36,6 +36,10 @@ server {
     #auth_request_set $username $upstream_http_x_username;
     #proxy_set_header X-User $username;
 
+    # Automatically renew SSO cookie on request
+    auth_request_set $cookie $upstream_http_set_cookie;
+    add_header Set-Cookie $cookie;
+
     proxy_pass http://127.0.0.1:1720/;
   }
 
