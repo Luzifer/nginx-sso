@@ -67,6 +67,7 @@ func (a authYubikey) DetectUser(res http.ResponseWriter, r *http.Request) (strin
 	}
 
 	// We had a cookie, lets renew it
+	sess.Options = mainCfg.GetSessionOpts()
 	if err := sess.Save(r, res); err != nil {
 		return "", nil, err
 	}
