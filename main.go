@@ -34,6 +34,16 @@ type mainConfig struct {
 	} `hcl:"login"`
 }
 
+func (m mainConfig) GetSessionOpts() *sessions.Options {
+	return &sessions.Options{
+		Path:     "/",
+		Domain:   m.Cookie.Domain,
+		MaxAge:   m.Cookie.Expire,
+		Secure:   m.Cookie.Secure,
+		HttpOnly: true,
+	}
+}
+
 var (
 	cfg = struct {
 		ConfigFile     string `flag:"config,c" default:"config.hcl" env:"CONFIG" description:"Location of the configuration file"`

@@ -107,6 +107,7 @@ func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) error {
 	}
 
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+	sess.Options = mainCfg.GetSessionOpts()
 	sess.Values["user"] = user
 	return sess.Save(r, res)
 }
@@ -129,6 +130,7 @@ func (a authYubikey) LoginFields() (fields []loginField) {
 // needs to destroy any persistent stored cookies
 func (a authYubikey) Logout(res http.ResponseWriter, r *http.Request) (err error) {
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
-	sess.Options.MaxAge = -1
+	sess.Options = mainCfg.GetSessionOpts()
+	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
 }
