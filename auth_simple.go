@@ -14,8 +14,9 @@ func init() {
 }
 
 type authSimple struct {
-	Users  map[string]string   `yaml:"users"`
-	Groups map[string][]string `yaml:"groups"`
+	EnableBasicAuth bool                `yaml:"enable_basic_auth"`
+	Users           map[string]string   `yaml:"users"`
+	Groups          map[string][]string `yaml:"groups"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -41,6 +42,7 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 		return errAuthenticatorUnconfigured
 	}
 
+	a.EnableBasicAuth = envelope.Providers.Simple.EnableBasicAuth
 	a.Users = envelope.Providers.Simple.Users
 	a.Groups = envelope.Providers.Simple.Groups
 
@@ -52,14 +54,34 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 // If no user was detected the errNoValidUserFound needs to be
 // returned
 func (a authSimple) DetectUser(r *http.Request) (string, []string, error) {
-	sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
-	if err != nil {
-		return "", nil, errNoValidUserFound
+	var user string
+
+	if a.EnableBasicAuth {
+		if basicUser, basicPass, ok := r.BasicAuth(); ok {
+			for u, p := range a.Users {
+				if u != basicUser {
+					continue
+				}
+				if bcrypt.CompareHashAndPassword([]byte(p), []byte(basicPass)) != nil {
+					continue
+				}
+
+				user = basicUser
+			}
+		}
 	}
 
-	user, ok := sess.Values["user"].(string)
-	if !ok {
-		return "", nil, errNoValidUserFound
+	if user == "" {
+		sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+		if err != nil {
+			return "", nil, errNoValidUserFound
+		}
+
+		var ok bool
+		user, ok = sess.Values["user"].(string)
+		if !ok {
+			return "", nil, errNoValidUserFound
+		}
 	}
 
 	groups := []string{}

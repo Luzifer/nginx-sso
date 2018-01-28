@@ -88,6 +88,8 @@ The simple auth provider consists of a static mapping between users and password
 ```yaml
 providers:
   simple:
+    enable_basic_auth: false
+
     # Unique username mapped to bcrypt hashed password
     users:
       luzifer: "$2a$10$FSGAF8qDWX52aBID8.WpxOyCvfSQ3JIUVFiwyd1jolb4jM3BzJmNu"
@@ -100,6 +102,8 @@ providers:
 ```
 
 You can see how to configure the provider the example above: No surprises, just ensure you are using bcrypt hashes for the passwords, no other hash functions are supported.
+
+If `enable_basic_auth` is set to `true` the credentials can also be submitted through basic auth. This is useful for services whose clients does not support other types of authentication.
 
 ### Provider configuration: Token Auth (`token`)
 
