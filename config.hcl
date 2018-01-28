@@ -1,5 +1,5 @@
 login {
-  title          = "luzifer.io"
+  title          = "luzifer.io - Login"
   default_method = "simple"
 
   names {

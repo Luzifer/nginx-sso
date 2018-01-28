@@ -45,6 +45,7 @@
               <div class="modal-body">
 
                 <!-- Nav tabs -->
+                {% if active_methods | length > 1 %}
                 <ul class="nav nav-tabs" role="tablist">
                   {% for method in active_methods %}
                   <li role="presentation" {% if method == login.DefaultMethod %}class="active"{% endif %}>
@@ -54,6 +55,7 @@
                   </li>
                   {% endfor %}
                 </ul>
+                {% endif %}
 
                 <!-- Tab panes -->
                 {% for method, fields in active_methods %}
