@@ -41,7 +41,7 @@ type authenticator interface {
 
 	// Logout is called when the user visits the logout endpoint and
 	// needs to destroy any persistent stored cookies
-	Logout(res http.ResponseWriter) (err error)
+	Logout(res http.ResponseWriter, r *http.Request) (err error)
 }
 
 type loginField struct {
@@ -130,6 +130,19 @@ func loginUser(res http.ResponseWriter, r *http.Request) error {
 	}
 
 	return noValidUserFoundError
+}
+
+func logoutUser(res http.ResponseWriter, r *http.Request) error {
+	authenticatorRegistryMutex.RLock()
+	defer authenticatorRegistryMutex.RUnlock()
+
+	for _, a := range activeAuthenticators {
+		if err := a.Logout(res, r); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func getFrontendAuthenticators() map[string][]loginField {

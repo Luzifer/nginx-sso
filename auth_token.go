@@ -72,7 +72,7 @@ func (a authToken) DetectUser(r *http.Request) (string, []string, error) {
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the noValidUserFoundError
 // needs to be returned
-func (a authToken) Login(res http.ResponseWriter, r *http.Request) error { return nil }
+func (a authToken) Login(res http.ResponseWriter, r *http.Request) error { return noValidUserFoundError }
 
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
@@ -81,4 +81,4 @@ func (a authToken) LoginFields() []loginField { return nil }
 
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
-func (a authToken) Logout(res http.ResponseWriter) error { return nil }
+func (a authToken) Logout(res http.ResponseWriter, r *http.Request) error { return nil }

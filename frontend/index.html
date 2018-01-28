@@ -63,12 +63,14 @@
                       {% for field in fields %}
                       <div class="form-group">
                         <label for="{{ method }}-{{ field.Name }}">{{ field.Label }}</label>
-                        <input type="{{ field.Type }}" class="form-control" placeholder="{{ field.Placeholder }}" id="{{ method }}-{{ field.Name }}" />
+                        <input type="{{ field.Type }}" class="form-control" placeholder="{{ field.Placeholder }}"
+                               name="{{ method }}-{{ field.Name }}" id="{{ method }}-{{ field.Name }}" />
                       </div>
                       {% endfor %}
 
                       <div class="form-group text-center">
                         <button type="submit" class="btn btn-success btn-lg">Login</button>
+                        <input type="hidden" name="go" value="{{ go }}">
                       </div>
                     </form>
                   </div>

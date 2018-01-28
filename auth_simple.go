@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/Luzifer/go_helpers/str"
 	"github.com/hashicorp/hcl"
 )
@@ -77,7 +79,25 @@ func (a authSimple) DetectUser(r *http.Request) (string, []string, error) {
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the noValidUserFoundError
 // needs to be returned
-func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (err error) { return nil }
+func (a authSimple) Login(res http.ResponseWriter, r *http.Request) error {
+	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
+	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
+
+	for u, p := range a.Users {
+		if u != username {
+			continue
+		}
+		if bcrypt.CompareHashAndPassword([]byte(p), []byte(password)) != nil {
+			continue
+		}
+
+		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+		sess.Values["user"] = u
+		return sess.Save(r, res)
+	}
+
+	return noValidUserFoundError
+}
 
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
@@ -101,4 +121,8 @@ func (a authSimple) LoginFields() (fields []loginField) {
 
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
-func (a authSimple) Logout(res http.ResponseWriter) (err error) { return nil }
+func (a authSimple) Logout(res http.ResponseWriter, r *http.Request) (err error) {
+	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+	sess.Options.MaxAge = -1
+	return sess.Save(r, res)
+}

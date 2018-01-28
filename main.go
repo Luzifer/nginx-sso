@@ -134,6 +134,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 	tpl := pongo2.Must(pongo2.FromFile(path.Join(cfg.TemplateDir, "index.html")))
 	if err := tpl.ExecuteWriter(pongo2.Context{
 		"active_methods": getFrontendAuthenticators(),
+		"go":             r.URL.Query().Get("go"),
 		"login":          mainCfg.Login,
 	}, res); err != nil {
 		log.WithError(err).Error("Unable to render template")
@@ -141,4 +142,12 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {}
+func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {
+	if err := logoutUser(res, r); err != nil {
+		log.WithError(err).Error("Failed to logout user")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(res, r, r.URL.Query().Get("go"), http.StatusFound)
+}

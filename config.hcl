@@ -36,7 +36,7 @@ providers {
   simple {
     // Unique username mapped to bcrypt hashed password
     users {
-      luzifer = "$2a$10$V0X4fp9B9TE2woDzhj3pVunxno1M0RtpHaxeDdo0AKrUxUN8s6IIi"
+      luzifer = "$2a$10$FSGAF8qDWX52aBID8.WpxOyCvfSQ3JIUVFiwyd1jolb4jM3BzJmNu"
     }
 
     // Groupname to users mapping
