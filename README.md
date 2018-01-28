@@ -7,6 +7,64 @@
 
 This program is intended to be used within the [`ngx_http_auth_request_module`](https://nginx.org/en/docs/http/ngx_http_auth_request_module.html) of nginx to provide a single-sign-on for a domain using one central authentication directory.
 
+## Usage
+
+You can use the `luzifer/nginx-sso` docker image to start your SSO service. On first start an example configuration will be generated and after you've changed that configuration you can start the container:
+
+```
+# docker run -d -p 127.0.0.1:8082:8082 -v /data/sso-config:/data luzifer/nginx-sso
+```
+
+After you did this you need to configure your nginx to use the SSO service:
+
+```nginx
+server {
+  listen        443 ssl;
+  server_name   kibana.hub.luzifer.io;
+
+  ssl_certificate     /data/ssl/certs/luzifer.io.pem;
+  ssl_certificate_key /data/ssl/certs/luzifer.io.key;
+
+  # Redirect the user to the login page when they are not logged in
+  error_page 401 = @error401;
+
+  location / {
+    # Protect this location using the auth_request
+    auth_request /sso-auth;
+
+    ## Optionally set a header to pass through the username
+    #auth_request_set $username $upstream_http_x_username;
+    #proxy_set_header X-User $username;
+
+    proxy_pass http://127.0.0.1:1720/;
+  }
+
+  location /sso-auth {
+    # Do not allow requests from outside
+    internal;
+    # Access /auth endpoint to query login state
+    proxy_pass http://127.0.0.1:8082/auth;
+    # Do not forward the request body (nginx-sso does not care about it)
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
+    # Set custom information for ACL matching: Each one is available as
+    # a field for matching: X-Host = x-host, ...
+    proxy_set_header X-Original-URI $request_uri;
+    proxy_set_header X-Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Application "kibana";
+  }
+
+  # Define where to send the user to login and specify how to get back
+  location @error401 {
+    # Another server{} directive also proxying to http://127.0.0.1:8082
+    return 302 https://login.luzifer.io/login?go=$scheme://$http_host$request_uri;
+  }
+}
+```
+
 ## Configuration
 
 The configuration is mainly done using a YAML configuration file. Some options are configurable through command line flags and can be looked up using `--help` flag.
@@ -54,6 +112,8 @@ listen:
   addr: "127.0.0.1"
   port: 8082
 ```
+
+Pay attention if you are running the docker container you need to change the IP to `0.0.0.0` to expose the port in the container. If you miss this the service will not be available.
 
 ### Main configuration: ACL
 
