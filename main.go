@@ -11,28 +11,28 @@ import (
 	"github.com/Luzifer/rconfig"
 	"github.com/flosch/pongo2"
 	"github.com/gorilla/sessions"
-	"github.com/hashicorp/hcl"
 	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type mainConfig struct {
-	ACL    acl `hcl:"acl"`
+	ACL    acl `yaml:"acl"`
 	Cookie struct {
-		Domain  string `hcl:"domain"`
-		AuthKey string `hcl:"authentication_key"`
-		Expire  int    `hcl:"expire"`
-		Prefix  string `hcl:"prefix"`
-		Secure  bool   `hcl:"secure"`
+		Domain  string `yaml:"domain"`
+		AuthKey string `yaml:"authentication_key"`
+		Expire  int    `yaml:"expire"`
+		Prefix  string `yaml:"prefix"`
+		Secure  bool   `yaml:"secure"`
 	}
 	Listen struct {
-		Addr string `hcl:"addr"`
-		Port int    `hcl:"port"`
-	} `hcl:"listen"`
+		Addr string `yaml:"addr"`
+		Port int    `yaml:"port"`
+	} `yaml:"listen"`
 	Login struct {
-		Title         string            `hcl:"title"`
-		DefaultMethod string            `hcl:"default_method"`
-		Names         map[string]string `hcl:"names"`
-	} `hcl:"login"`
+		Title         string            `yaml:"title"`
+		DefaultMethod string            `yaml:"default_method"`
+		Names         map[string]string `yaml:"names"`
+	} `yaml:"login"`
 }
 
 func (m mainConfig) GetSessionOpts() *sessions.Options {
@@ -47,7 +47,7 @@ func (m mainConfig) GetSessionOpts() *sessions.Options {
 
 var (
 	cfg = struct {
-		ConfigFile     string `flag:"config,c" default:"config.hcl" env:"CONFIG" description:"Location of the configuration file"`
+		ConfigFile     string `flag:"config,c" default:"config.yaml" env:"CONFIG" description:"Location of the configuration file"`
 		LogLevel       string `flag:"log-level" default:"info" description:"Level of logs to display (debug, info, warn, error)"`
 		TemplateDir    string `flag:"frontend-dir" default:"./frontend/" env:"FRONTEND_DIR" description:"Location of the directory containing the web assets"`
 		VersionAndExit bool   `flag:"version" default:"false" description:"Prints current version and exits"`
@@ -83,18 +83,20 @@ func init() {
 }
 
 func main() {
-	hclSource, err := ioutil.ReadFile(cfg.ConfigFile)
+	yamlSource, err := ioutil.ReadFile(cfg.ConfigFile)
 	if err != nil {
 		log.WithError(err).Fatal("Unable to read configuration file")
 	}
 
-	if err := hcl.Unmarshal(hclSource, &mainCfg); err != nil {
+	if err := yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
 		log.WithError(err).Fatal("Unable to load configuration file")
 	}
 
-	if err := initializeAuthenticators(hclSource); err != nil {
+	if err := initializeAuthenticators(yamlSource); err != nil {
 		log.WithError(err).Fatal("Unable to configure authentication")
 	}
+
+	log.Debugf("maincfg = %#v", mainCfg)
 
 	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
 

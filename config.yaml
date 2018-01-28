@@ -1,0 +1,72 @@
+---
+
+login:
+  title: "luzifer.io - Login"
+  default_method: "simple"
+  names:
+    simple: "Username / Password"
+    yubikey: "Yubikey"
+
+cookie:
+  domain: ".example.com"
+  authentication_key: "Ff1uWJcLouKu9kwxgbnKcU3ps47gps72sxEz79TGHFCpJNCPtiZAFDisM4MWbstH"
+  expire: 3600        # Optional, default: 3600
+  prefix: "nginx-sso" # Optional, default: nginx-sso
+  secure: true        # Optional, default: false
+
+# Optional, default: 127.0.0.1:8082
+listen:
+  addr: "127.0.0.1"
+  port: 8082
+
+acl:
+  rule_sets:
+  - rules:
+    - field: "host"
+      equals: "test.example.com"
+    - field: "x-origin-uri"
+      regexp: "^/api"
+    allow: ["luzifer", "@admins"]
+
+providers:
+  # Authentication against an Atlassian Crowd directory server
+  # Supports: Users, Groups
+  crowd:
+    url: "https://crowd.example.com/crowd/"
+    app_name: ""
+    app_pass: ""
+
+  # Authentication against embedded user database
+  # Supports: Users, Groups
+  simple:
+    # Unique username mapped to bcrypt hashed password
+    users:
+      luzifer: "$2a$10$FSGAF8qDWX52aBID8.WpxOyCvfSQ3JIUVFiwyd1jolb4jM3BzJmNu"
+
+    # Groupname to users mapping
+    groups:
+      admins: ["luzifer"]
+
+  # Authentication against embedded token directory
+  # Supports: Users
+  token:
+    # Mapping of unique token names to the token
+    tokens:
+      tokenname: "MYTOKEN"
+
+  # Authentication against Yubikey cloud validation servers
+  # Supports: Users, Groups
+  yubikey:
+    # Get your client / secret from https://upgrade.yubico.com/getapikey/
+    client_id: "12345"
+    secret_key: "foobar"
+
+    # First 12 characters of the OTP string mapped to the username
+    devices:
+      ccccccfcvuul: "luzifer"
+
+    # Groupname to users mapping
+    groups:
+      admins: ["luzifer"]
+
+...

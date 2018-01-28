@@ -6,7 +6,7 @@ import (
 
 	"github.com/GeertJohan/yubigo"
 	"github.com/Luzifer/go_helpers/str"
-	"github.com/hashicorp/hcl"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -14,10 +14,10 @@ func init() {
 }
 
 type authYubikey struct {
-	ClientID  string              `hcl:"client_id"`
-	SecretKey string              `hcl:"secret_key"`
-	Devices   map[string]string   `hcl:"devices"`
-	Groups    map[string][]string `hcl:"groups"`
+	ClientID  string              `yaml:"client_id"`
+	SecretKey string              `yaml:"secret_key"`
+	Devices   map[string]string   `yaml:"devices"`
+	Groups    map[string][]string `yaml:"groups"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -25,17 +25,17 @@ type authYubikey struct {
 func (a authYubikey) AuthenticatorID() string { return "yubikey" }
 
 // Configure loads the configuration for the Authenticator from the
-// global config.hcl file which is passed as a byte-slice.
+// global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the errAuthenticatorUnconfigured
-func (a *authYubikey) Configure(hclSource []byte) error {
+func (a *authYubikey) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
-			Yubikey *authYubikey `hcl:"yubikey"`
-		} `hcl:"providers"`
+			Yubikey *authYubikey `yaml:"yubikey"`
+		} `yaml:"providers"`
 	}{}
 
-	if err := hcl.Unmarshal(hclSource, &envelope); err != nil {
+	if err := yaml.Unmarshal(yamlSource, &envelope); err != nil {
 		return err
 	}
 

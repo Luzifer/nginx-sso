@@ -4,10 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/Luzifer/go_helpers/str"
-	"github.com/hashicorp/hcl"
+	"golang.org/x/crypto/bcrypt"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -15,8 +14,8 @@ func init() {
 }
 
 type authSimple struct {
-	Users  map[string]string   `hcl:"users"`
-	Groups map[string][]string `hcl:"groups"`
+	Users  map[string]string   `yaml:"users"`
+	Groups map[string][]string `yaml:"groups"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -24,17 +23,17 @@ type authSimple struct {
 func (a authSimple) AuthenticatorID() string { return "simple" }
 
 // Configure loads the configuration for the Authenticator from the
-// global config.hcl file which is passed as a byte-slice.
+// global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the errAuthenticatorUnconfigured
-func (a *authSimple) Configure(hclSource []byte) error {
+func (a *authSimple) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
-			Simple *authSimple `hcl:"simple"`
-		} `hcl:"providers"`
+			Simple *authSimple `yaml:"simple"`
+		} `yaml:"providers"`
 	}{}
 
-	if err := hcl.Unmarshal(hclSource, &envelope); err != nil {
+	if err := yaml.Unmarshal(yamlSource, &envelope); err != nil {
 		return err
 	}
 

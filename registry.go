@@ -15,10 +15,10 @@ type authenticator interface {
 	AuthenticatorID() (id string)
 
 	// Configure loads the configuration for the Authenticator from the
-	// global config.hcl file which is passed as a byte-slice.
+	// global config.yaml file which is passed as a byte-slice.
 	// If no configuration for the Authenticator is supplied the function
 	// needs to return the errAuthenticatorUnconfigured
-	Configure(hclSource []byte) (err error)
+	Configure(yamlSource []byte) (err error)
 
 	// DetectUser is used to detect a user without a login form from
 	// a cookie, header or other methods
@@ -68,12 +68,12 @@ func registerAuthenticator(a authenticator) {
 	authenticatorRegistry = append(authenticatorRegistry, a)
 }
 
-func initializeAuthenticators(hclSource []byte) error {
+func initializeAuthenticators(yamlSource []byte) error {
 	authenticatorRegistryMutex.Lock()
 	defer authenticatorRegistryMutex.Unlock()
 
 	for _, a := range authenticatorRegistry {
-		err := a.Configure(hclSource)
+		err := a.Configure(yamlSource)
 
 		switch err {
 		case nil:

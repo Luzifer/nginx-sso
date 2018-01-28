@@ -10,11 +10,11 @@ import (
 )
 
 type aclRule struct {
-	Field       string  `hcl:"field"`
-	Invert      bool    `hcl:"invert"`
-	IsPresent   *bool   `hcl:"present"`
-	MatchRegex  *string `hcl:"regexp"`
-	MatchString *string `hcl:"equals"`
+	Field       string  `yaml:"field"`
+	Invert      bool    `yaml:"invert"`
+	IsPresent   *bool   `yaml:"present"`
+	MatchRegex  *string `yaml:"regexp"`
+	MatchString *string `yaml:"equals"`
 }
 
 func (a aclRule) Validate() error {
@@ -98,10 +98,10 @@ const (
 )
 
 type aclRuleSet struct {
-	Rules []aclRule `hcl:"rule"`
+	Rules []aclRule `yaml:"rules"`
 
-	Allow []string `hcl:"allow"`
-	Deny  []string `hcl:"deny"`
+	Allow []string `yaml:"allow"`
+	Deny  []string `yaml:"deny"`
 }
 
 func (a aclRuleSet) buildFieldSet(r *http.Request) map[string]string {
@@ -163,7 +163,7 @@ func (a aclRuleSet) Validate() error {
 }
 
 type acl struct {
-	RuleSets []aclRuleSet `hcl:"rule_set"`
+	RuleSets []aclRuleSet `yaml:"rule_sets"`
 }
 
 func (a acl) Validate() error {

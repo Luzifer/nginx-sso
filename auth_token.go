@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/hashicorp/hcl"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -12,7 +12,7 @@ func init() {
 }
 
 type authToken struct {
-	Tokens map[string]string `hcl:"tokens"`
+	Tokens map[string]string `yaml:"tokens"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -20,17 +20,17 @@ type authToken struct {
 func (a authToken) AuthenticatorID() string { return "token" }
 
 // Configure loads the configuration for the Authenticator from the
-// global config.hcl file which is passed as a byte-slice.
+// global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the errAuthenticatorUnconfigured
-func (a *authToken) Configure(hclSource []byte) error {
+func (a *authToken) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
-			Token *authToken `hcl:"token"`
-		} `hcl:"providers"`
+			Token *authToken `yaml:"token"`
+		} `yaml:"providers"`
 	}{}
 
-	if err := hcl.Unmarshal(hclSource, &envelope); err != nil {
+	if err := yaml.Unmarshal(yamlSource, &envelope); err != nil {
 		return err
 	}
 
