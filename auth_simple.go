@@ -53,7 +53,7 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 // a cookie, header or other methods
 // If no user was detected the errNoValidUserFound needs to be
 // returned
-func (a authSimple) DetectUser(r *http.Request) (string, []string, error) {
+func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	var user string
 
 	if a.EnableBasicAuth {

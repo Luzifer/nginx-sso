@@ -55,7 +55,7 @@ func (a *authYubikey) Configure(yamlSource []byte) error {
 // a cookie, header or other methods
 // If no user was detected the errNoValidUserFound needs to be
 // returned
-func (a authYubikey) DetectUser(r *http.Request) (string, []string, error) {
+func (a authYubikey) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 	if err != nil {
 		return "", nil, errNoValidUserFound

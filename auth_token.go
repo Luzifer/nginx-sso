@@ -47,7 +47,7 @@ func (a *authToken) Configure(yamlSource []byte) error {
 // a cookie, header or other methods
 // If no user was detected the errNoValidUserFound needs to be
 // returned
-func (a authToken) DetectUser(r *http.Request) (string, []string, error) {
+func (a authToken) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	authHeader := r.Header.Get("Authorization")
 
 	if !strings.HasPrefix(authHeader, "Token ") {
