@@ -125,6 +125,12 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 }
 
 func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
+	if _, _, err := detectUser(r); err == nil {
+		// There is already a valid user
+		http.Redirect(res, r, r.URL.Query().Get("go"), http.StatusFound)
+		return
+	}
+
 	if r.Method == "POST" {
 		err := loginUser(res, r)
 		switch err {
