@@ -47,10 +47,10 @@
                 <!-- Nav tabs -->
                 {% if active_methods | length > 1 %}
                 <ul class="nav nav-tabs" role="tablist">
-                  {% for method in active_methods %}
-                  <li role="presentation" {% if method == login.DefaultMethod %}class="active"{% endif %}>
+                  {% for method in active_methods sorted %}
+                  <li role="presentation" class="{% if method == login.DefaultMethod %}active{% endif %}">
                     {% for name, desc in login.Names %}{% if method == name %}
-                    <a href="#{{ method }}" aria-controls="home" role="tab" data-toggle="tab">{{ desc }}</a>
+                    <a href="#{{ method }}" aria-controls="{{ method }}" role="tab" data-toggle="tab">{{ desc }}</a>
                     {% endif %}{% endfor %}
                   </li>
                   {% endfor %}
@@ -58,8 +58,8 @@
                 {% endif %}
 
                 <!-- Tab panes -->
-                {% for method, fields in active_methods %}
                 <div class="tab-content">
+                  {% for method, fields in active_methods sorted %}
                   <div role="tabpanel" class="tab-pane {% if method == login.DefaultMethod %}active{% endif %}" id="{{ method }}">
                     <form action="/login" method="post">
                       {% for field in fields %}
@@ -76,8 +76,8 @@
                       </div>
                     </form>
                   </div>
+                  {% endfor %}
                 </div>
-                {% endfor %}
 
               </div> <!-- /.panel-body -->
             </div> <!-- /.modal-content -->
