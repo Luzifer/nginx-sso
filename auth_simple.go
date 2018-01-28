@@ -82,6 +82,11 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 		if !ok {
 			return "", nil, errNoValidUserFound
 		}
+
+		// We had a cookie, lets renew it
+		if err := sess.Save(r, res); err != nil {
+			return "", nil, err
+		}
 	}
 
 	groups := []string{}

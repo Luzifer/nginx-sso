@@ -66,6 +66,11 @@ func (a authYubikey) DetectUser(res http.ResponseWriter, r *http.Request) (strin
 		return "", nil, errNoValidUserFound
 	}
 
+	// We had a cookie, lets renew it
+	if err := sess.Save(r, res); err != nil {
+		return "", nil, err
+	}
+
 	groups := []string{}
 	for group, users := range a.Groups {
 		if str.StringInSlice(user, users) {
