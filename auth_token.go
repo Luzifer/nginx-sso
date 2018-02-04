@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Luzifer/go_helpers/str"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -12,7 +14,8 @@ func init() {
 }
 
 type authToken struct {
-	Tokens map[string]string `yaml:"tokens"`
+	Tokens map[string]string   `yaml:"tokens"`
+	Groups map[string][]string `yaml:"groups"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -57,13 +60,25 @@ func (a authToken) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 	tmp := strings.SplitN(authHeader, " ", 2)
 	suppliedToken := tmp[1]
 
-	for user, token := range a.Tokens {
+	var user, token string
+	for user, token = range a.Tokens {
 		if token == suppliedToken {
-			return user, nil, nil
+			break
 		}
 	}
 
-	return "", nil, errNoValidUserFound
+	if user == "" {
+		return "", nil, errNoValidUserFound
+	}
+
+	groups := []string{}
+	for group, users := range a.Groups {
+		if str.StringInSlice(user, users) {
+			groups = append(groups, group)
+		}
+	}
+
+	return user, groups, nil
 }
 
 // Login is called when the user submits the login form and needs

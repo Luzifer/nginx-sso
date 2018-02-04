@@ -43,11 +43,15 @@ providers:
       admins: ["luzifer"]
 
   # Authentication against embedded token directory
-  # Supports: Users
+  # Supports: Users, Groups
   token:
     # Mapping of unique token names to the token
     tokens:
       tokenname: "MYTOKEN"
+
+    # Groupname to token mapping
+    groups:
+      mytokengroup: ["tokenname"]
 
   # Authentication against Yubikey cloud validation servers
   # Supports: Users, Groups

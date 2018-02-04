@@ -180,9 +180,13 @@ providers:
     tokens:
       tokenname: "MYTOKEN"
       mycli: "kQHjQLuQdkSPwdJ1mueniLMPSjCc6GVt"
+
+    # Groupname to token mapping
+    groups:
+      mytokengroup: ["tokenname"]
 ```
 
-This provider does not support grouping: Each token needs to be white-listed explicitly. When accessing the sites using a token this header is expected:
+When accessing the sites using a token this header is expected:
 
 `Authorization: Token MYTOKEN`
 
