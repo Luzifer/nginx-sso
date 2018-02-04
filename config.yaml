@@ -29,6 +29,13 @@ acl:
     allow: ["luzifer", "@admins"]
 
 providers:
+  # Authentication against an Atlassian Crowd directory server
+  # Supports: Users, Groups
+  crowd:
+    url: "https://crowd.example.com/crowd/"
+    app_name: ""
+    app_pass: ""
+
   # Authentication against embedded user database
   # Supports: Users, Groups
   simple:
