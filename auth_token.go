@@ -60,14 +60,18 @@ func (a authToken) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 	tmp := strings.SplitN(authHeader, " ", 2)
 	suppliedToken := tmp[1]
 
-	var user, token string
+	var (
+		user, token string
+		userFound   bool
+	)
 	for user, token = range a.Tokens {
 		if token == suppliedToken {
+			userFound = true
 			break
 		}
 	}
 
-	if user == "" {
+	if !userFound {
 		return "", nil, errNoValidUserFound
 	}
 
