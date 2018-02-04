@@ -1,3 +1,7 @@
+# 0.4.0 / 2018-02-04
+
+  * Allow grouping of tokens for simpler ACL
+
 # 0.3.0 / 2018-01-28
 
   * Document auto-renewal
