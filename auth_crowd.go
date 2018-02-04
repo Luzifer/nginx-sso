@@ -70,7 +70,7 @@ func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 		// Fine, we do have a cookie
 	case http.ErrNoCookie:
 		// Also fine, there is no cookie
-		return "", nil, nil
+		return "", nil, errNoValidUserFound
 	default:
 		return "", nil, err
 	}
@@ -78,7 +78,8 @@ func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 	ssoToken := cookie.Value
 	sess, err := a.crowd.GetSession(ssoToken)
 	if err != nil {
-		return "", nil, err
+		log.WithError(err).Debug("Getting crowd session failed")
+		return "", nil, errNoValidUserFound
 	}
 
 	user := sess.User.UserName
