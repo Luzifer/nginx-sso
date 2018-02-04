@@ -1,3 +1,7 @@
+# 0.4.2 / 2018-02-04
+
+  * Fix: Group assignments were not applied for Token auth
+
 # 0.4.1 / 2018-02-04
 
   * Fix: Token auth always had a logged in user
