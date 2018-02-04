@@ -145,6 +145,20 @@ Each `rules` entry has two mandantory and three optional fields of which at leas
 
 The `allow` and `deny` directives are arrays of users and groups. Groups are prefixed using an `@` sign. There is a simple logic: Users before groups, denies before allows. So if you allow the group `@test` containing the user `mike` but deny the user `mike`, mike will not be able to access the matching sites.
 
+### Provider configuration: Atlassian Crowd (`crowd`)
+
+The crowd auth provider connects nginx-sso with an Atlassian Crowd directory server. The SSO authentication cookie used by Jira and Confluence is also used by nginx-sso which means a login in Jira will also perform a login on nginx-sso and vice versa.
+
+```yaml
+providers:
+  crowd:
+    url: "https://crowd.example.com/crowd/"
+    app_name: ""
+    app_pass: ""
+```
+
+The configuration is quite simple: Create an application in Crowd, enter the Crowd URL and the application credentials into the config and you're done.
+
 ### Provider configuration: Simple Auth (`simple`)
 
 The simple auth provider consists of a static mapping between users and passwords and groups and users. This can be seen as the replacement of htpasswd files.

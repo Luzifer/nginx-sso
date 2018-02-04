@@ -45,6 +45,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/jda/go-crowd"
+  packages = ["."]
+  revision = "415c27e65cd496563601465cfe630d4b3245d70f"
+
+[[projects]]
+  branch = "master"
   name = "github.com/juju/errors"
   packages = ["."]
   revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
@@ -95,6 +101,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8d56acebac43d560504fd8420c68a9021e29a60ee6b09d477ddc0d2e815a5606"
+  inputs-digest = "c60c92a35a0972af226bbe9e4e3638d032a0ad26646fa6ac68919f2b3b805e82"
   solver-name = "gps-cdcl"
   solver-version = 1
