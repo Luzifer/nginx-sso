@@ -42,6 +42,7 @@ func (a *authToken) Configure(yamlSource []byte) error {
 	}
 
 	a.Tokens = envelope.Providers.Token.Tokens
+	a.Groups = envelope.Providers.Token.Groups
 
 	return nil
 }
