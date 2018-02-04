@@ -48,6 +48,10 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 	a.AppName = envelope.Providers.Crowd.AppName
 	a.AppPassword = envelope.Providers.Crowd.AppPassword
 
+	if a.AppName == "" || a.AppPassword == "" {
+		return errAuthenticatorUnconfigured
+	}
+
 	var err error
 	a.crowd, err = crowd.New(a.AppName, a.AppPassword, a.URL)
 
