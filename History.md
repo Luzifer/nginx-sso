@@ -1,3 +1,7 @@
+# 0.4.1 / 2018-02-04
+
+  * Fix: Token auth always had a logged in user
+
 # 0.4.0 / 2018-02-04
 
   * Allow grouping of tokens for simpler ACL
