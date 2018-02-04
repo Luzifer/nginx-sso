@@ -1,3 +1,7 @@
+# 0.5.0 / 2018-02-04
+
+  * Implement Crowd authentication (#2)
+
 # 0.4.2 / 2018-02-04
 
   * Fix: Group assignments were not applied for Token auth
