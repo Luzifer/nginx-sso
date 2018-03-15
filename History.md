@@ -1,3 +1,7 @@
+# 0.6.0 / 2018-03-15
+
+  * Add LDAP support (#3)
+
 # 0.5.0 / 2018-02-04
 
   * Implement Crowd authentication (#2)
