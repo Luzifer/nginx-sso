@@ -18,7 +18,6 @@ type authLDAP struct {
 	EnableBasicAuth       bool   `yaml:"enable_basic_auth"`
 	GroupMembershipFilter string `yaml:"group_membership_filter"`
 	GroupSearchBase       string `yaml:"group_search_base"`
-	GroupSearchFilter     string `yaml:"group_search_filter"`
 	ManagerDN             string `yaml:"manager_dn"`
 	ManagerPassword       string `yaml:"manager_password"`
 	RootDN                string `yaml:"root_dn"`
@@ -42,11 +41,6 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 		} `yaml:"providers"`
 	}{}
 
-	// Set defaults
-	envelope.Providers.LDAP.UserSearchFilter = `uid={0}`
-	envelope.Providers.LDAP.GroupSearchFilter = `(& (cn={0}) (| (objectclass=groupOfNames) (objectclass=groupOfUniqueNames) (objectclass=posixGroup)))`
-	envelope.Providers.LDAP.GroupMembershipFilter = `(| (member={0}) (uniqueMember={0}))`
-
 	if err := yaml.Unmarshal(yamlSource, &envelope); err != nil {
 		return err
 	}
@@ -58,7 +52,6 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 	a.EnableBasicAuth = envelope.Providers.LDAP.EnableBasicAuth
 	a.GroupMembershipFilter = envelope.Providers.LDAP.GroupMembershipFilter
 	a.GroupSearchBase = envelope.Providers.LDAP.GroupSearchBase
-	a.GroupSearchFilter = envelope.Providers.LDAP.GroupSearchFilter
 	a.ManagerDN = envelope.Providers.LDAP.ManagerDN
 	a.ManagerPassword = envelope.Providers.LDAP.ManagerPassword
 	a.RootDN = envelope.Providers.LDAP.RootDN
@@ -66,6 +59,13 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 	a.UserSearchBase = envelope.Providers.LDAP.UserSearchBase
 	a.UserSearchFilter = envelope.Providers.LDAP.UserSearchFilter
 
+	// Set defaults
+	if a.UserSearchFilter == "" {
+		a.UserSearchFilter = `(uid={0})`
+	}
+	if a.GroupMembershipFilter == "" {
+		a.GroupMembershipFilter = `(|(member={0})(uniqueMember={0}))`
+	}
 	if a.UserSearchBase == "" {
 		a.UserSearchBase = a.RootDN
 	}
@@ -133,7 +133,7 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) error {
 	)
 
 	if userDN, err = a.checkLogin(username, password); err != nil {
-		return errNoValidUserFound
+		return err
 	}
 
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
@@ -254,7 +254,7 @@ func (a authLDAP) getUserGroups(userDN string) ([]string, error) {
 		ldap.ScopeWholeSubtree,
 		ldap.NeverDerefAliases,
 		0, 0, false,
-		strings.Replace(a.GroupSearchFilter, `{0}`, userDN, -1),
+		strings.Replace(a.GroupMembershipFilter, `{0}`, userDN, -1),
 		[]string{"dn"},
 		nil,
 	)
