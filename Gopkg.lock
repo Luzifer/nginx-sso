@@ -87,6 +87,18 @@
   revision = "ff2a66f350cefa5c93a634eadb5d25bb60c85a9c"
 
 [[projects]]
+  name = "gopkg.in/asn1-ber.v1"
+  packages = ["."]
+  revision = "379148ca0225df7a432012b8df0355c2a2063ac0"
+  version = "v1.2"
+
+[[projects]]
+  name = "gopkg.in/ldap.v2"
+  packages = ["."]
+  revision = "bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9"
+  version = "v2.5.1"
+
+[[projects]]
   branch = "v2"
   name = "gopkg.in/validator.v2"
   packages = ["."]
@@ -101,6 +113,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c60c92a35a0972af226bbe9e4e3638d032a0ad26646fa6ac68919f2b3b805e82"
+  inputs-digest = "62f32b4a6ee3a3e10d11f49265d37af10218b5ca992552f010f544cb8b03cd58"
   solver-name = "gps-cdcl"
   solver-version = 1

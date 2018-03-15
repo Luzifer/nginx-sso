@@ -36,6 +36,23 @@ providers:
     app_name: ""
     app_pass: ""
 
+  # Authentication against (Open)LDAP server
+  # Supports: Users, Groups
+  ldap:
+    enable_basic_auth: false
+    manager_dn: "cn=admin,dc=example,dc=com"
+    manager_password: ""
+    root_dn: "dc=example,dc=com"
+    server: "ldap://ldap.example.com"
+    # Optional, defaults to root_dn
+    user_search_base: ou=users,dc=example,dc=com
+    # Optional, defaults to '(uid={0})'
+    user_search_filter: ""
+    # Optional, defaults to root_dn
+    group_search_base: "ou=groups,dc=example,dc=com"
+    # Optional, defaults to '(|(member={0})(uniqueMember={0}))'
+    group_membership_filter: ""
+
   # Authentication against embedded user database
   # Supports: Users, Groups
   simple:

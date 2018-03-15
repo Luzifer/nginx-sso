@@ -159,6 +159,53 @@ providers:
 
 The configuration is quite simple: Create an application in Crowd, enter the Crowd URL and the application credentials into the config and you're done.
 
+### Provider configuration: LDAP Auth (`ldap`)
+
+The LDAP provider connects to a (remote) LDAP directory server and authenticates users against and reads groups from it.
+
+```yaml
+providers:
+  ldap:
+    enable_basic_auth: false
+    manager_dn: "cn=admin,dc=example,dc=com"
+    manager_password: ""
+    root_dn: "dc=example,dc=com"
+    server: "ldap://ldap.example.com"
+    # Optional, defaults to root_dn
+    user_search_base: ou=users,dc=example,dc=com
+    # Optional, defaults to '(uid={0})'
+    user_search_filter: ""
+    # Optional, defaults to root_dn
+    group_search_base: "ou=groups,dc=example,dc=com"
+    # Optional, defaults to '(|(member={0})(uniqueMember={0}))'
+    group_membership_filter: ""
+```
+
+To use this provider you need to have a LDAP server set up and filled with users. The example (and default) config above assumes each of your users carries an `uid` attribute and groups does contains `member` or `uniqueMember` attributes. Inside the groups full DNs are expected. For the ACL also full DNs are used.
+
+- `enable_basic_auth` - optional - Allows automated clients to pass credentials using basic auth instead of using the login form
+- `manager_dn` - required - A LDAP account which is allowed to list users and groups (it needs no access to the password!)
+- `manager_password` - required - The password for the `manager_dn`
+- `root_dn` - required - The base of your directory
+- `server` - required - Connection string to the LDAP server in format `ldap[s]://<host>[:<port>]`
+- `user_search_base` - optional - Using this parameter you can limit the user search to a certain sub-tree. Within this sub-tree the `uid` must be unique (as the name already states). If unset the `root_dn` is used here
+- `user_search_filter` - optional - The query to issue to find the user from its `uid` (`{0}` is replaced with the `uid`). If unset the query `(uid={0})` is used
+- `group_search_base` - optional - Like the `user_search_base` this limits the sub-tree where to search for groups, also defaults to `root_dn`
+- `group_membership_filter` - optional - The query to issue to list all groups the user is a member of. The DN of each group is used as the group name. If unset the query `(|(member={0})(uniqueMember={0}))` is used
+
+When using the LDAP provider you need to pay attention when writing your ACL. As DNs are used as names for users and groups you also need to specify those in the ACL:
+
+```yaml
+acl:
+  rule_sets:
+  - rules:
+    - field: "host"
+      equals: "test.example.com"
+    allow:
+    - "cn=myuser,ou=users,dc=example,dc=com"
+    - "@cn=mygroup,ou=groups,dc=example,dc=com"
+```
+
 ### Provider configuration: Simple Auth (`simple`)
 
 The simple auth provider consists of a static mapping between users and passwords and groups and users. This can be seen as the replacement of htpasswd files.
