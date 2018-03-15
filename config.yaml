@@ -52,7 +52,7 @@ providers:
     group_search_base: "ou=groups,dc=example,dc=com"
     # Optional, defaults to '(& (cn={0}) (| (objectclass=groupOfNames) (objectclass=groupOfUniqueNames) (objectclass=posixGroup)))'
     group_search_filter: ""
-    # Optional, defaults to '(| (member={0}) (uniqueMember={0}) (memberUid={1}))'
+    # Optional, defaults to '(| (member={0}) (uniqueMember={0}))'
     group_membership_filter: ""
 
   # Authentication against embedded user database

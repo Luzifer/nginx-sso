@@ -45,7 +45,7 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 	// Set defaults
 	envelope.Providers.LDAP.UserSearchFilter = `uid={0}`
 	envelope.Providers.LDAP.GroupSearchFilter = `(& (cn={0}) (| (objectclass=groupOfNames) (objectclass=groupOfUniqueNames) (objectclass=posixGroup)))`
-	envelope.Providers.LDAP.GroupMembershipFilter = `(| (member={0}) (uniqueMember={0}) (memberUid={1}))`
+	envelope.Providers.LDAP.GroupMembershipFilter = `(| (member={0}) (uniqueMember={0}))`
 
 	if err := yaml.Unmarshal(yamlSource, &envelope); err != nil {
 		return err
