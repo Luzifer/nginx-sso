@@ -179,6 +179,9 @@ providers:
     group_search_base: "ou=groups,dc=example,dc=com"
     # Optional, defaults to '(|(member={0})(uniqueMember={0}))'
     group_membership_filter: ""
+    # Replace DN as the username with another attribute
+    # Optional, defaults to "dn"
+    username_attribute: "uid"
 ```
 
 To use this provider you need to have a LDAP server set up and filled with users. The example (and default) config above assumes each of your users carries an `uid` attribute and groups does contains `member` or `uniqueMember` attributes. Inside the groups full DNs are expected. For the ACL also full DNs are used.
@@ -192,6 +195,7 @@ To use this provider you need to have a LDAP server set up and filled with users
 - `user_search_filter` - optional - The query to issue to find the user from its `uid` (`{0}` is replaced with the `uid`). If unset the query `(uid={0})` is used
 - `group_search_base` - optional - Like the `user_search_base` this limits the sub-tree where to search for groups, also defaults to `root_dn`
 - `group_membership_filter` - optional - The query to issue to list all groups the user is a member of. The DN of each group is used as the group name. If unset the query `(|(member={0})(uniqueMember={0}))` is used
+- `username_attribute` - optional - The attribute containing the username returned to nginx instead of the dn. If unset the `dn` is used
 
 When using the LDAP provider you need to pay attention when writing your ACL. As DNs are used as names for users and groups you also need to specify those in the ACL:
 

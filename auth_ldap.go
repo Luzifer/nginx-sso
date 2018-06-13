@@ -24,6 +24,7 @@ type authLDAP struct {
 	Server                string `yaml:"server"`
 	UserSearchBase        string `yaml:"user_search_base"`
 	UserSearchFilter      string `yaml:"user_search_filter"`
+	UsernameAttribute     string `yaml:"username_attribute"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -58,6 +59,7 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 	a.Server = envelope.Providers.LDAP.Server
 	a.UserSearchBase = envelope.Providers.LDAP.UserSearchBase
 	a.UserSearchFilter = envelope.Providers.LDAP.UserSearchFilter
+	a.UsernameAttribute = envelope.Providers.LDAP.UsernameAttribute
 
 	// Set defaults
 	if a.UserSearchFilter == "" {
@@ -74,6 +76,10 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 		a.GroupSearchBase = a.RootDN
 	}
 
+	if a.UsernameAttribute == "" {
+		a.UsernameAttribute = "dn"
+	}
+
 	return nil
 }
 
@@ -82,14 +88,15 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 // If no user was detected the errNoValidUserFound needs to be
 // returned
 func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
-	var user string
+	var alias, user string
 
 	if a.EnableBasicAuth {
 		if basicUser, basicPass, ok := r.BasicAuth(); ok {
-			if userDN, err := a.checkLogin(basicUser, basicPass); err != nil {
+			if userDN, a, err := a.checkLogin(basicUser, basicPass, a.UsernameAttribute); err != nil {
 				return "", nil, err
 			} else {
 				user = userDN
+				alias = a
 			}
 		}
 	}
@@ -101,8 +108,12 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 		}
 
 		var ok bool
-		user, ok = sess.Values["user"].(string)
-		if !ok {
+		if user, ok = sess.Values["user"].(string); !ok {
+			return "", nil, errNoValidUserFound
+		}
+
+		if alias, ok = sess.Values["alias"].(string); !ok {
+			// Most likely an old cookie, force re-login
 			return "", nil, errNoValidUserFound
 		}
 
@@ -114,7 +125,8 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 	}
 
 	groups, err := a.getUserGroups(user)
-	return user, groups, err
+
+	return alias, groups, err
 }
 
 // Login is called when the user submits the login form and needs
@@ -129,16 +141,18 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) error {
 
 	var (
 		userDN string
+		alias  string
 		err    error
 	)
 
-	if userDN, err = a.checkLogin(username, password); err != nil {
+	if userDN, alias, err = a.checkLogin(username, password, a.UsernameAttribute); err != nil {
 		return err
 	}
 
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 	sess.Options = mainCfg.GetSessionOpts()
 	sess.Values["user"] = userDN
+	sess.Values["alias"] = alias
 	return sess.Save(r, res)
 }
 
@@ -173,10 +187,10 @@ func (a authLDAP) Logout(res http.ResponseWriter, r *http.Request) (err error) {
 
 // checkLogin searches for the username using the specified UserSearchFilter
 // and returns the UserDN and an error (errNoValidUserFound / processing error)
-func (a authLDAP) checkLogin(username, password string) (string, error) {
+func (a authLDAP) checkLogin(username, password, aliasAttribute string) (string, string, error) {
 	l, err := a.dial()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer l.Close()
 
@@ -186,26 +200,26 @@ func (a authLDAP) checkLogin(username, password string) (string, error) {
 		ldap.NeverDerefAliases,
 		0, 0, false,
 		strings.Replace(a.UserSearchFilter, `{0}`, username, -1),
-		[]string{"dn"},
+		[]string{"dn", aliasAttribute},
 		nil,
 	)
 
 	sres, err := l.Search(sreq)
 	if err != nil {
-		return "", fmt.Errorf("Unable to search for user: %s", err)
+		return "", "", fmt.Errorf("Unable to search for user: %s", err)
 	}
 
 	if len(sres.Entries) != 1 {
-		return "", errNoValidUserFound
+		return "", "", errNoValidUserFound
 	}
 
 	userDN := sres.Entries[0].DN
 
 	if err := l.Bind(userDN, password); err != nil {
-		return "", errNoValidUserFound
+		return "", "", errNoValidUserFound
 	}
 
-	return userDN, nil
+	return userDN, sres.Entries[0].GetAttributeValue(aliasAttribute), nil
 }
 
 // dial connects to the LDAP server and authenticates using manager_dn

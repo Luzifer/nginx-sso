@@ -52,6 +52,9 @@ providers:
     group_search_base: "ou=groups,dc=example,dc=com"
     # Optional, defaults to '(|(member={0})(uniqueMember={0}))'
     group_membership_filter: ""
+    # Replace DN as the username with another attribute
+    # Optional, defaults to "dn"
+    username_attribute: "uid"
 
   # Authentication against embedded user database
   # Supports: Users, Groups
