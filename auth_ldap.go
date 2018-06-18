@@ -219,7 +219,13 @@ func (a authLDAP) checkLogin(username, password, aliasAttribute string) (string,
 		return "", "", errNoValidUserFound
 	}
 
-	return userDN, sres.Entries[0].GetAttributeValue(aliasAttribute), nil
+	alias := sres.Entries[0].GetAttributeValue(aliasAttribute)
+	if aliasAttribute == "dn" {
+		// DN is not fetchable through GetAttributeValue as it is not an attribute
+		alias = userDN
+	}
+
+	return userDN, alias, nil
 }
 
 // dial connects to the LDAP server and authenticates using manager_dn
