@@ -1,3 +1,7 @@
+# 0.7.0 / 2018-06-18
+
+  * Add configurable username to LDAP auth
+
 # 0.6.0 / 2018-03-15
 
   * Add LDAP support (#3)
