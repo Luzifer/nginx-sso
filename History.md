@@ -1,3 +1,7 @@
+# 0.7.1 / 2018-06-18
+
+  * Fix: Ensure alias is set correctly when it is a DN
+
 # 0.7.0 / 2018-06-18
 
   * Add configurable username to LDAP auth
