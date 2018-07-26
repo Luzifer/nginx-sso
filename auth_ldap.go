@@ -124,7 +124,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 		}
 	}
 
-	groups, err := a.getUserGroups(user)
+	groups, err := a.getUserGroups(user, alias)
 
 	return alias, groups, err
 }
@@ -262,7 +262,7 @@ func (a authLDAP) dial() (*ldap.Conn, error) {
 }
 
 // getUserGroups searches for groups containing the user
-func (a authLDAP) getUserGroups(userDN string) ([]string, error) {
+func (a authLDAP) getUserGroups(userDN, alias string) ([]string, error) {
 	l, err := a.dial()
 	if err != nil {
 		return nil, err
@@ -274,7 +274,10 @@ func (a authLDAP) getUserGroups(userDN string) ([]string, error) {
 		ldap.ScopeWholeSubtree,
 		ldap.NeverDerefAliases,
 		0, 0, false,
-		strings.Replace(a.GroupMembershipFilter, `{0}`, userDN, -1),
+		strings.NewReplacer(
+			`{0}`, userDN,
+			`{1}`, alias,
+		).Replace(a.GroupMembershipFilter),
 		[]string{"dn"},
 		nil,
 	)
