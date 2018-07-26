@@ -1,3 +1,7 @@
+# 0.8.0 / 2018-07-26
+
+  * Allow searching group members by username (#9)
+
 # 0.7.1 / 2018-06-18
 
   * Fix: Ensure alias is set correctly when it is a DN
