@@ -141,7 +141,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) error {
+func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -152,14 +152,14 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) error {
 	)
 
 	if userDN, alias, err = a.checkLogin(username, password, a.UsernameAttribute); err != nil {
-		return err
+		return "", err
 	}
 
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 	sess.Options = mainCfg.GetSessionOpts()
 	sess.Values["user"] = userDN
 	sess.Values["alias"] = alias
-	return sess.Save(r, res)
+	return userDN, sess.Save(r, res)
 }
 
 // LoginFields needs to return the fields required for this login

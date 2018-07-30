@@ -106,7 +106,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authSimple) Login(res http.ResponseWriter, r *http.Request) error {
+func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -121,10 +121,10 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) error {
 		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 		sess.Options = mainCfg.GetSessionOpts()
 		sess.Values["user"] = u
-		return sess.Save(r, res)
+		return u, sess.Save(r, res)
 	}
 
-	return errNoValidUserFound
+	return "", errNoValidUserFound
 }
 
 // LoginFields needs to return the fields required for this login

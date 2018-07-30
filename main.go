@@ -103,6 +103,10 @@ func loadConfiguration() error {
 		return fmt.Errorf("Unable to configure authentication: %s", err)
 	}
 
+	if err = initializeMFAProviders(yamlSource); err != nil {
+		log.WithError(err).Fatal("Unable to configure MFA providers")
+	}
+
 	return nil
 }
 
@@ -176,11 +180,25 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "POST" {
-		err := loginUser(res, r)
+		user, err := loginUser(res, r)
+		switch err {
+		case errNoValidUserFound:
+			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
+			return
+		case nil:
+			// Don't handle for now, MFA validation comes first
+		default:
+			log.WithError(err).Error("Login failed with unexpected error")
+			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
+			return
+		}
+
+		err = validateMFA(res, r, user)
 		switch err {
 		case errNoValidUserFound:
 			auditFields["reason"] = "invalid credentials"
 			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields)
+			res.Header().Del("Set-Cookie") // Remove login cookie
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
 
@@ -194,6 +212,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 			auditFields["error"] = err.Error()
 			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields)
 			log.WithError(err).Error("Login failed with unexpected error")
+			res.Header().Del("Set-Cookie") // Remove login cookie
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
 		}

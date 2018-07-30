@@ -77,12 +77,7 @@ func userHasMFA(user string) bool {
 	return false
 }
 
-func validateMFA(res http.ResponseWriter, r *http.Request) error {
-	user, _, err := detectUser(res, r)
-	if err != nil {
-		return err
-	}
-
+func validateMFA(res http.ResponseWriter, r *http.Request, user string) error {
 	if !userHasMFA(user) {
 		// User has no configured MFA devices, their MFA is automatically valid
 		return nil
@@ -92,7 +87,7 @@ func validateMFA(res http.ResponseWriter, r *http.Request) error {
 	defer mfaRegistryMutex.RUnlock()
 
 	for _, m := range activeMFAProviders {
-		err = m.ValidateMFA(res, r, user)
+		err := m.ValidateMFA(res, r, user)
 		switch err {
 		case nil:
 			// Validated successfully

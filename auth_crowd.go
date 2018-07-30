@@ -106,13 +106,13 @@ func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) error {
+func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) (string, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
 	cc, err := a.crowd.GetCookieConfig()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	sess, err := a.crowd.NewSession(username, password, r.RemoteAddr)
@@ -120,7 +120,7 @@ func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) error {
 		log.WithFields(log.Fields{
 			"username": username,
 		}).WithError(err).Debug("Crowd authentication failed")
-		return errNoValidUserFound
+		return "", errNoValidUserFound
 	}
 
 	http.SetCookie(res, &http.Cookie{
@@ -133,7 +133,7 @@ func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) error {
 		HttpOnly: true,
 	})
 
-	return nil
+	return username, nil
 }
 
 // LoginFields needs to return the fields required for this login

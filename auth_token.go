@@ -92,7 +92,9 @@ func (a authToken) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authToken) Login(res http.ResponseWriter, r *http.Request) error { return errNoValidUserFound }
+func (a authToken) Login(res http.ResponseWriter, r *http.Request) (string, error) {
+	return "", errNoValidUserFound
+}
 
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function

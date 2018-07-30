@@ -32,7 +32,7 @@ type authenticator interface {
 	// in order to use DetectUser for the next login.
 	// If the user did not login correctly the errNoValidUserFound
 	// needs to be returned
-	Login(res http.ResponseWriter, r *http.Request) (err error)
+	Login(res http.ResponseWriter, r *http.Request) (user string, err error)
 
 	// LoginFields needs to return the fields required for this login
 	// method. If no login using this method is possible the function
@@ -116,23 +116,23 @@ func detectUser(res http.ResponseWriter, r *http.Request) (string, []string, err
 	return "", nil, errNoValidUserFound
 }
 
-func loginUser(res http.ResponseWriter, r *http.Request) error {
+func loginUser(res http.ResponseWriter, r *http.Request) (string, error) {
 	authenticatorRegistryMutex.RLock()
 	defer authenticatorRegistryMutex.RUnlock()
 
 	for _, a := range activeAuthenticators {
-		err := a.Login(res, r)
+		user, err := a.Login(res, r)
 		switch err {
 		case nil:
-			return nil
+			return user, nil
 		case errNoValidUserFound:
 			// This is okay.
 		default:
-			return err
+			return "", err
 		}
 	}
 
-	return errNoValidUserFound
+	return "", errNoValidUserFound
 }
 
 func logoutUser(res http.ResponseWriter, r *http.Request) error {
