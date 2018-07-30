@@ -28,7 +28,7 @@ func (a authCrowd) AuthenticatorID() string { return "crowd" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errAuthenticatorUnconfigured
+// needs to return the errProviderUnconfigured
 func (a *authCrowd) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -41,7 +41,7 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Crowd == nil {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	a.URL = envelope.Providers.Crowd.URL
@@ -49,7 +49,7 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 	a.AppPassword = envelope.Providers.Crowd.AppPassword
 
 	if a.AppName == "" || a.AppPassword == "" {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	var err error

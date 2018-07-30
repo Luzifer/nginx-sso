@@ -25,7 +25,7 @@ func (a authToken) AuthenticatorID() string { return "token" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errAuthenticatorUnconfigured
+// needs to return the errProviderUnconfigured
 func (a *authToken) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -38,7 +38,7 @@ func (a *authToken) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Token == nil {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	a.Tokens = envelope.Providers.Token.Tokens

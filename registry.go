@@ -17,7 +17,7 @@ type authenticator interface {
 	// Configure loads the configuration for the Authenticator from the
 	// global config.yaml file which is passed as a byte-slice.
 	// If no configuration for the Authenticator is supplied the function
-	// needs to return the errAuthenticatorUnconfigured
+	// needs to return the errProviderUnconfigured
 	Configure(yamlSource []byte) (err error)
 
 	// DetectUser is used to detect a user without a login form from
@@ -52,8 +52,8 @@ type loginField struct {
 }
 
 var (
-	errAuthenticatorUnconfigured = errors.New("No valid configuration found for this authenticator")
-	errNoValidUserFound          = errors.New("No valid users found")
+	errProviderUnconfigured = errors.New("No valid configuration found for this provider")
+	errNoValidUserFound     = errors.New("No valid users found")
 
 	authenticatorRegistry      = []authenticator{}
 	authenticatorRegistryMutex sync.RWMutex
@@ -80,7 +80,7 @@ func initializeAuthenticators(yamlSource []byte) error {
 		case nil:
 			tmp = append(tmp, a)
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Activated authenticator")
-		case errAuthenticatorUnconfigured:
+		case errProviderUnconfigured:
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Authenticator unconfigured")
 			// This is okay.
 		default:

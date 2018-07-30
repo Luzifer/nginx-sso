@@ -28,7 +28,7 @@ func (a authYubikey) AuthenticatorID() string { return "yubikey" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errAuthenticatorUnconfigured
+// needs to return the errProviderUnconfigured
 func (a *authYubikey) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -41,7 +41,7 @@ func (a *authYubikey) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Yubikey == nil {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	a.ClientID = envelope.Providers.Yubikey.ClientID
