@@ -10,6 +10,7 @@ import (
 
 	"github.com/Luzifer/rconfig"
 	"github.com/flosch/pongo2"
+	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -102,7 +103,7 @@ func main() {
 	http.HandleFunc("/login", handleLoginRequest)
 	http.HandleFunc("/logout", handleLogoutRequest)
 
-	http.ListenAndServe(fmt.Sprintf("%s:%d", mainCfg.Listen.Addr, mainCfg.Listen.Port), nil)
+	http.ListenAndServe(fmt.Sprintf("%s:%d", mainCfg.Listen.Addr, mainCfg.Listen.Port), context.ClearHandler(http.DefaultServeMux))
 }
 
 func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
