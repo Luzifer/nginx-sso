@@ -1,3 +1,8 @@
+# 0.8.1 / 2018-09-08
+
+  * Fix: Memory leak due to http requests stored forever
+  * Update repo-runner image
+
 # 0.8.0 / 2018-07-26
 
   * Allow searching group members by username (#9)
