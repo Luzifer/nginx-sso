@@ -1,3 +1,7 @@
+# 0.9.0 / 2018-09-20
+
+  * Implement config reload on SIGHUP (#12)
+
 # 0.8.1 / 2018-09-08
 
   * Fix: Memory leak due to http requests stored forever
