@@ -88,7 +88,7 @@ func initializeAuthenticators(yamlSource []byte) error {
 		}
 	}
 
-	if len(activeAuthenticators) == 0 {
+	if len(tmp) == 0 {
 		return fmt.Errorf("No authenticator configurations supplied")
 	}
 
