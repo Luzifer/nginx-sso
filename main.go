@@ -118,21 +118,18 @@ func main() {
 		context.ClearHandler(http.DefaultServeMux),
 	)
 
-	sigChan := make(chan os.Signal)
+	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGHUP)
 
-	for {
-		select {
-		case sig := <-sigChan:
-			switch sig {
-			case syscall.SIGHUP:
-				if err := loadConfiguration(); err != nil {
-					log.WithError(err).Error("Unable to reload configuration")
-				}
-
-			default:
-				log.Fatalf("Received unexpected signal: %v", sig)
+	for sig := range sigChan {
+		switch sig {
+		case syscall.SIGHUP:
+			if err := loadConfiguration(); err != nil {
+				log.WithError(err).Error("Unable to reload configuration")
 			}
+
+		default:
+			log.Fatalf("Received unexpected signal: %v", sig)
 		}
 	}
 }
