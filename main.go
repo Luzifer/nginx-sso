@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"path"
+	"syscall"
 
 	"github.com/Luzifer/rconfig"
 	"github.com/flosch/pongo2"
@@ -83,18 +85,26 @@ func init() {
 	mainCfg.Listen.Port = 8082
 }
 
-func main() {
+func loadConfiguration() error {
 	yamlSource, err := ioutil.ReadFile(cfg.ConfigFile)
 	if err != nil {
-		log.WithError(err).Fatal("Unable to read configuration file")
+		return fmt.Errorf("Unable to read configuration file: %s", err)
 	}
 
 	if err := yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
-		log.WithError(err).Fatal("Unable to load configuration file")
+		return fmt.Errorf("Unable to load configuration file", err)
 	}
 
 	if err := initializeAuthenticators(yamlSource); err != nil {
-		log.WithError(err).Fatal("Unable to configure authentication")
+		return fmt.Errorf("Unable to configure authentication", err)
+	}
+
+	return nil
+}
+
+func main() {
+	if err := loadConfiguration(); err != nil {
+		log.WithError(err).Fatal("Unable to load configuration")
 	}
 
 	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
@@ -103,7 +113,28 @@ func main() {
 	http.HandleFunc("/login", handleLoginRequest)
 	http.HandleFunc("/logout", handleLogoutRequest)
 
-	http.ListenAndServe(fmt.Sprintf("%s:%d", mainCfg.Listen.Addr, mainCfg.Listen.Port), context.ClearHandler(http.DefaultServeMux))
+	go http.ListenAndServe(
+		fmt.Sprintf("%s:%d", mainCfg.Listen.Addr, mainCfg.Listen.Port),
+		context.ClearHandler(http.DefaultServeMux),
+	)
+
+	sigChan := make(chan os.Signal)
+	signal.Notify(sigChan, syscall.SIGHUP)
+
+	for {
+		select {
+		case sig := <-sigChan:
+			switch sig {
+			case syscall.SIGHUP:
+				if err := loadConfiguration(); err != nil {
+					log.WithError(err).Error("Unable to reload configuration")
+				}
+
+			default:
+				log.Fatalf("Received unexpected signal: %v", sig)
+			}
+		}
+	}
 }
 
 func handleAuthRequest(res http.ResponseWriter, r *http.Request) {

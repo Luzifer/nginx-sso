@@ -72,12 +72,13 @@ func initializeAuthenticators(yamlSource []byte) error {
 	authenticatorRegistryMutex.Lock()
 	defer authenticatorRegistryMutex.Unlock()
 
+	tmp := []authenticator{}
 	for _, a := range authenticatorRegistry {
 		err := a.Configure(yamlSource)
 
 		switch err {
 		case nil:
-			activeAuthenticators = append(activeAuthenticators, a)
+			tmp = append(tmp, a)
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Activated authenticator")
 		case errAuthenticatorUnconfigured:
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Authenticator unconfigured")
@@ -90,6 +91,8 @@ func initializeAuthenticators(yamlSource []byte) error {
 	if len(activeAuthenticators) == 0 {
 		return fmt.Errorf("No authenticator configurations supplied")
 	}
+
+	activeAuthenticators = tmp
 
 	return nil
 }
