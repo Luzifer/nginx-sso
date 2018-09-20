@@ -92,11 +92,11 @@ func loadConfiguration() error {
 	}
 
 	if err := yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
-		return fmt.Errorf("Unable to load configuration file", err)
+		return fmt.Errorf("Unable to load configuration file: %s", err)
 	}
 
 	if err := initializeAuthenticators(yamlSource); err != nil {
-		return fmt.Errorf("Unable to configure authentication", err)
+		return fmt.Errorf("Unable to configure authentication: %s", err)
 	}
 
 	return nil
