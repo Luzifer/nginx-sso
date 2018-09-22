@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -228,6 +229,21 @@ func (a authLDAP) checkLogin(username, password, aliasAttribute string) (string,
 	return userDN, alias, nil
 }
 
+func (a authLDAP) portFromScheme(scheme, override string) string {
+	if override != "" {
+		return override
+	}
+
+	switch scheme {
+	case "ldap":
+		return "389"
+	case "ldaps":
+		return "636"
+	default:
+		return ""
+	}
+}
+
 // dial connects to the LDAP server and authenticates using manager_dn
 func (a authLDAP) dial() (*ldap.Conn, error) {
 	u, err := url.Parse(a.Server)
@@ -238,18 +254,22 @@ func (a authLDAP) dial() (*ldap.Conn, error) {
 	host := u.Host
 	port := u.Port()
 
-	if port == "" {
-		switch u.Scheme {
-		case "ldap":
-			port = "389"
-		case "ldaps":
-			port = "636"
-		default:
-			return nil, fmt.Errorf("Unsupported scheme %s", u.Scheme)
-		}
+	var l *ldap.Conn
+
+	switch u.Scheme {
+	case "ldap":
+		l, err = ldap.Dial("tcp", fmt.Sprintf("%s:%s", host, a.portFromScheme(u.Scheme, port)))
+
+	case "ldaps":
+		l, err = ldap.DialTLS(
+			"tcp", fmt.Sprintf("%s:%s", host, a.portFromScheme(u.Scheme, port)),
+			&tls.Config{ServerName: host},
+		)
+
+	default:
+		return nil, fmt.Errorf("Unsupported scheme %s", u.Scheme)
 	}
 
-	l, err := ldap.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
 	if err != nil {
 		return nil, fmt.Errorf("Unable to connect to LDAP: %s", err)
 	}
