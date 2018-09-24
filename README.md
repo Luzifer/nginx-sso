@@ -182,6 +182,15 @@ providers:
     # Replace DN as the username with another attribute
     # Optional, defaults to "dn"
     username_attribute: "uid"
+    # Configure TLS parameters for LDAPs connections
+    # Optional, defaults to null
+    tls_config:
+      # Set the hostname for certificate validation
+      # Optional, defaults to host from the connection URI
+      validate_hostname: ldap.example.com
+      # Disable certificate validation
+      # Optional, defaults to false
+      allow_insecure: false
 ```
 
 To use this provider you need to have a LDAP server set up and filled with users. The example (and default) config above assumes each of your users carries an `uid` attribute and groups does contains `member` or `uniqueMember` attributes. Inside the groups full DNs are expected. For the ACL also full DNs are used.
@@ -196,6 +205,9 @@ To use this provider you need to have a LDAP server set up and filled with users
 - `group_search_base` - optional - Like the `user_search_base` this limits the sub-tree where to search for groups, also defaults to `root_dn`
 - `group_membership_filter` - optional - The query to issue to list all groups the user is a member of. The DN of each group is used as the group name. If unset the query `(|(member={0})(uniqueMember={0}))` is used (`{0}` is replaced with the users DN, `{1}` is replaced with the content of the `username_attribute`)
 - `username_attribute` - optional - The attribute containing the username returned to nginx instead of the dn. If unset the `dn` is used
+- `tls_config` - optional - Configures TLS parameters for LDAPs connections
+  - `validate_hostname` - optional - Set the hostname for certificate validation, when unset the hostname from the `server` URI is used
+  - `allow_insecure` - optional - Disable certificate validation. Setting this is not recommended for production setups
 
 When using the LDAP provider you need to pay attention when writing your ACL. As DNs are used as names for users and groups you also need to specify those in the ACL:
 
