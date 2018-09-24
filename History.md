@@ -1,3 +1,8 @@
+# 0.10.0 / 2018-09-24
+
+  * Fix TLS dialing (#16)
+  * Use multi-stage build to reduce image size
+
 # 0.9.0 / 2018-09-20
 
   * Implement config reload on SIGHUP (#12)
