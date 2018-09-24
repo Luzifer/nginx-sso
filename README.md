@@ -188,7 +188,7 @@ providers:
       # Set the hostname for certificate validation
       # Optional, defaults to host from the connection URI
       validate_hostname: ldap.example.com
-      # Disable certificate validation, will be ignored when validate_hostname is set
+      # Disable certificate validation
       # Optional, defaults to false
       allow_insecure: false
 ```
@@ -207,7 +207,7 @@ To use this provider you need to have a LDAP server set up and filled with users
 - `username_attribute` - optional - The attribute containing the username returned to nginx instead of the dn. If unset the `dn` is used
 - `tls_config` - optional - Configures TLS parameters for LDAPs connections
   - `validate_hostname` - optional - Set the hostname for certificate validation, when unset the hostname from the `server` URI is used
-  - `allow_insecure` - optional - Disable certificate validation, will be ignored when validate_hostname is set. Setting this is not recommended for production setups
+  - `allow_insecure` - optional - Disable certificate validation. Setting this is not recommended for production setups
 
 When using the LDAP provider you need to pay attention when writing your ACL. As DNs are used as names for users and groups you also need to specify those in the ACL:
 

@@ -61,7 +61,7 @@ providers:
       # Set the hostname for certificate validation
       # Optional, defaults to host from the connection URI
       validate_hostname: ldap.example.com
-      # Disable certificate validation, will be ignored when validate_hostname is set
+      # Disable certificate validation
       # Optional, defaults to false
       allow_insecure: false
 

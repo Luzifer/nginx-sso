@@ -268,10 +268,11 @@ func (a authLDAP) dial() (*ldap.Conn, error) {
 	case "ldaps":
 		tlsConfig := &tls.Config{ServerName: host}
 
-		if a.TLSConfig != nil && a.TLSConfig.ValidateHostname != "" {
-			tlsConfig.ServerName = a.TLSConfig.ValidateHostname
-		} else if a.TLSConfig != nil && a.TLSConfig.AllowInsecure {
-			tlsConfig = &tls.Config{InsecureSkipVerify: true}
+		if a.TLSConfig != nil && (a.TLSConfig.ValidateHostname != "" || a.TLSConfig.AllowInsecure) {
+			tlsConfig = &tls.Config{
+				ServerName:         a.TLSConfig.ValidateHostname,
+				InsecureSkipVerify: a.TLSConfig.AllowInsecure,
+			}
 		}
 
 		l, err = ldap.DialTLS(
