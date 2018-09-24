@@ -26,6 +26,10 @@ type authLDAP struct {
 	UserSearchBase        string `yaml:"user_search_base"`
 	UserSearchFilter      string `yaml:"user_search_filter"`
 	UsernameAttribute     string `yaml:"username_attribute"`
+	TLSConfig             *struct {
+		ValidateHostname string `yaml:"validate_hostname"`
+		AllowInsecure    bool   `yaml:"allow_insecure"`
+	} `yaml:"tls_config"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -61,6 +65,7 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 	a.UserSearchBase = envelope.Providers.LDAP.UserSearchBase
 	a.UserSearchFilter = envelope.Providers.LDAP.UserSearchFilter
 	a.UsernameAttribute = envelope.Providers.LDAP.UsernameAttribute
+	a.TLSConfig = envelope.Providers.LDAP.TLSConfig
 
 	// Set defaults
 	if a.UserSearchFilter == "" {
@@ -261,9 +266,17 @@ func (a authLDAP) dial() (*ldap.Conn, error) {
 		l, err = ldap.Dial("tcp", fmt.Sprintf("%s:%s", host, a.portFromScheme(u.Scheme, port)))
 
 	case "ldaps":
+		tlsConfig := &tls.Config{ServerName: host}
+
+		if a.TLSConfig != nil && a.TLSConfig.ValidateHostname != "" {
+			tlsConfig.ServerName = a.TLSConfig.ValidateHostname
+		} else if a.TLSConfig != nil && a.TLSConfig.AllowInsecure {
+			tlsConfig = &tls.Config{InsecureSkipVerify: true}
+		}
+
 		l, err = ldap.DialTLS(
 			"tcp", fmt.Sprintf("%s:%s", host, a.portFromScheme(u.Scheme, port)),
-			&tls.Config{ServerName: host},
+			tlsConfig,
 		)
 
 	default:

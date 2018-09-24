@@ -55,6 +55,15 @@ providers:
     # Replace DN as the username with another attribute
     # Optional, defaults to "dn"
     username_attribute: "uid"
+    # Configure TLS parameters for LDAPs connections
+    # Optional, defaults to null
+    tls_config:
+      # Set the hostname for certificate validation
+      # Optional, defaults to host from the connection URI
+      validate_hostname: ldap.example.com
+      # Disable certificate validation, will be ignored when validate_hostname is set
+      # Optional, defaults to false
+      allow_insecure: false
 
   # Authentication against embedded user database
   # Supports: Users, Groups
