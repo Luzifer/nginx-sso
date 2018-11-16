@@ -5,8 +5,9 @@ import (
 	"strings"
 
 	"github.com/GeertJohan/yubigo"
-	"github.com/Luzifer/go_helpers/str"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/Luzifer/go_helpers/str"
 )
 
 func init() {
@@ -97,7 +98,7 @@ func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) error {
 	}
 
 	_, ok, err := yubiAuth.Verify(keyInput)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "OTP has wrong length.") {
 		return err
 	}
 
