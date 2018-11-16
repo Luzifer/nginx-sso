@@ -175,7 +175,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		err := loginUser(res, r)
 		switch err {
 		case errNoValidUserFound:
-			mainCfg.AuditLog.Log(auditEventLoginFailure, r, nil)
+			mainCfg.AuditLog.Log(auditEventLoginFailure, r, map[string]string{"reson": "invalid credentials"})
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
 		case nil:
@@ -183,6 +183,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 			http.Redirect(res, r, r.FormValue("go"), http.StatusFound)
 			return
 		default:
+			mainCfg.AuditLog.Log(auditEventLoginFailure, r, map[string]string{"reason": "error", "error": err.Error()})
 			log.WithError(err).Error("Login failed with unexpected error")
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
