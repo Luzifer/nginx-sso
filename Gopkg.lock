@@ -3,116 +3,171 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:697c67f85d787be755efeb03461cb252e6c06d021fb67ac269242922f39035f2"
   name = "github.com/GeertJohan/yubigo"
   packages = ["."]
+  pruneopts = ""
   revision = "b1764f04aa9ba3c98a15084e7e13c1a69753e1da"
 
 [[projects]]
+  digest = "1:8483940c8f4bd6dab88903250941fef7773494c86e765734dc3459d61dbc1444"
   name = "github.com/Luzifer/go_helpers"
   packages = ["str"]
+  pruneopts = ""
   revision = "8fdddb7041fe962e750caa553a0714f94e261c4a"
   version = "v2.3.1"
 
 [[projects]]
+  digest = "1:58eb28a3287fe7633eed58de6aa0449a2d937dc03f06f201fcef3994c4795d08"
   name = "github.com/Luzifer/rconfig"
   packages = ["."]
+  pruneopts = ""
   revision = "7aef1d393c1e2d0758901853b59981c7adc67c7e"
   version = "v1.2.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:b7eb152b61f41f0c9bcb6cf1187e1470a91d5e01d1e08f8b7bfd722578851720"
   name = "github.com/flosch/pongo2"
   packages = ["."]
+  pruneopts = ""
   revision = "1f4be1efe3b3529b7e58861f75d70120a9567dc4"
 
 [[projects]]
+  digest = "1:20ed7daa9b3b38b6d1d39b48ab3fd31122be5419461470d0c28de3e121c93ecf"
   name = "github.com/gorilla/context"
   packages = ["."]
+  pruneopts = ""
   revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
   version = "v1.1"
 
 [[projects]]
+  digest = "1:1ff3509899d1357b533eefcc4be703aa4b8b690370de9bce65389aad226acf3c"
   name = "github.com/gorilla/securecookie"
   packages = ["."]
+  pruneopts = ""
   revision = "667fe4e3466a040b780561fe9b51a83a3753eefc"
   version = "v1.1"
 
 [[projects]]
+  digest = "1:bfb5530b06be15a20de32e6c946eddc2d81693980c79205bcda3bd37fe1a931c"
   name = "github.com/gorilla/sessions"
   packages = ["."]
+  pruneopts = ""
   revision = "ca9ada44574153444b00d3fd9c8559e4cc95f896"
   version = "v1.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:d989aa073a1e7f56cfe080f90c2f6c5acf8d6a2ab07cc9d6d0b65b836bc70e10"
   name = "github.com/jda/go-crowd"
   packages = ["."]
+  pruneopts = ""
   revision = "415c27e65cd496563601465cfe630d4b3245d70f"
 
 [[projects]]
   branch = "master"
+  digest = "1:b38a66184fb38b517900ab365f43557ea7e4efe36f939e2fcb53ec0aa92b29c5"
   name = "github.com/juju/errors"
   packages = ["."]
+  pruneopts = ""
   revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
 
 [[projects]]
+  digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = ""
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
+  digest = "1:42a42c4bc67bed17f40fddf0f24d4403e25e7b96488456cf4248e6d16659d370"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
+  pruneopts = ""
   revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
   version = "v1.0.4"
 
 [[projects]]
+  digest = "1:261bc565833ef4f02121450d74eb88d5ae4bd74bfe5d0e862cddb8550ec35000"
   name = "github.com/spf13/pflag"
   packages = ["."]
+  pruneopts = ""
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:febc7d7c1a817016b83441742910a3eab682d5c64613fcd91fde7ca06107ea49"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
     "blowfish",
-    "ssh/terminal"
+    "ssh/terminal",
   ]
+  pruneopts = ""
   revision = "1875d0a70c90e57f11972aefd42276df65e895b9"
 
 [[projects]]
   branch = "master"
+  digest = "1:7a77d5b443b8e08a7d8ec3e4bc9ac636599be22668a12fdd01fb478e9b2ed4fa"
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
+  pruneopts = ""
   revision = "ff2a66f350cefa5c93a634eadb5d25bb60c85a9c"
 
 [[projects]]
+  digest = "1:3cad99e0d1f94b8c162787c12e59d0a0b9df1ef75590eb145cdd625479091efe"
   name = "gopkg.in/asn1-ber.v1"
   packages = ["."]
+  pruneopts = ""
   revision = "379148ca0225df7a432012b8df0355c2a2063ac0"
   version = "v1.2"
 
 [[projects]]
+  digest = "1:367baf06b7dbd0ef0bbdd785f6a79f929c96b0c18e9d3b29c0eed1ac3f5db133"
   name = "gopkg.in/ldap.v2"
   packages = ["."]
+  pruneopts = ""
   revision = "bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9"
   version = "v2.5.1"
 
 [[projects]]
   branch = "v2"
+  digest = "1:8012e3289c36d514a961b9b9a7576324a105c6eee7df346d92afd071cf79f97c"
   name = "gopkg.in/validator.v2"
   packages = ["."]
+  pruneopts = ""
   revision = "460c83432a98c35224a6fe352acf8b23e067ad06"
 
 [[projects]]
   branch = "v2"
+  digest = "1:4b4e5848dfe7f316f95f754df071bebfb40cf4482da62e17e7e1aebdf11f4918"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = ""
   revision = "d670f9405373e636a5a2765eea47fac0c9bc91a4"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "62f32b4a6ee3a3e10d11f49265d37af10218b5ca992552f010f544cb8b03cd58"
+  input-imports = [
+    "github.com/GeertJohan/yubigo",
+    "github.com/Luzifer/go_helpers/str",
+    "github.com/Luzifer/rconfig",
+    "github.com/flosch/pongo2",
+    "github.com/gorilla/context",
+    "github.com/gorilla/sessions",
+    "github.com/jda/go-crowd",
+    "github.com/pkg/errors",
+    "github.com/sirupsen/logrus",
+    "golang.org/x/crypto/bcrypt",
+    "gopkg.in/ldap.v2",
+    "gopkg.in/yaml.v2",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
