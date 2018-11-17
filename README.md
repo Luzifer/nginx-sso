@@ -119,6 +119,27 @@ listen:
 
 Pay attention if you are running the docker container you need to change the IP to `0.0.0.0` to expose the port in the container. If you miss this the service will not be available.
 
+### Main configuration: Audit Logging
+
+nginx-sso can be configured to write an audit log which for example can be used to detect brute-force attacks on passwords. By default the audit logging is disabled and gets enabled by providing `targets` in the `audit_log` section of the config.
+
+Due to the fact we do have several credential providers the `login` and `logout` events do not contain an username. The username is only known in requests the user is doing after their login so the `access_denied` and `validate` events contains it.
+
+```yaml
+audit_log:
+  targets:
+    - fd://stdout
+    - file:///var/log/nginx-sso/audit.jsonl
+  events: ['access_denied', 'login_success', 'login_failure', 'logout', 'validate']
+  headers: ['x-origin-uri']
+  trusted_ip_headers: ["X-Forwarded-For", "RemoteAddr", "X-Real-IP"]
+```
+
+- `targets` - required - Supported targets are `fd://stdout`, `fd://stderr` or any `file://...` URI
+- `events` - required - All supported events are listed above in the example. Pay attention `validate` is a quite verbose event
+- `headers` - optional - List of headers to include into the log entry (for details about the headers see the ACL section below)
+- `trusted_ip_headers` - optional - List of headers to use for reading the real IP the request is coming from (defaults see example above)
+
 ### Main configuration: ACL
 
 The rules of the ACL are the most complex part of the configuration and you should take your time to make this bullet-proof. If you mess up you're probably are getting complaints from your users because the default policy applied is to `deny` all access. So in the end you are configuring a white-list here.

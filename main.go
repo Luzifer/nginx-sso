@@ -10,17 +10,19 @@ import (
 	"path"
 	"syscall"
 
-	"github.com/Luzifer/rconfig"
 	"github.com/flosch/pongo2"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/Luzifer/rconfig"
 )
 
 type mainConfig struct {
-	ACL    acl `yaml:"acl"`
-	Cookie struct {
+	ACL      acl         `yaml:"acl"`
+	AuditLog auditLogger `yaml:"audit_log"`
+	Cookie   struct {
 		Domain  string `yaml:"domain"`
 		AuthKey string `yaml:"authentication_key"`
 		Expire  int    `yaml:"expire"`
@@ -38,7 +40,7 @@ type mainConfig struct {
 	} `yaml:"login"`
 }
 
-func (m mainConfig) GetSessionOpts() *sessions.Options {
+func (m *mainConfig) GetSessionOpts() *sessions.Options {
 	return &sessions.Options{
 		Path:     "/",
 		Domain:   m.Cookie.Domain,
@@ -83,6 +85,8 @@ func init() {
 	mainCfg.Cookie.Expire = 3600
 	mainCfg.Listen.Addr = "127.0.0.1"
 	mainCfg.Listen.Port = 8082
+	mainCfg.AuditLog.TrustedIPHeaders = []string{"X-Forwarded-For", "RemoteAddr", "X-Real-IP"}
+	mainCfg.AuditLog.Headers = []string{"x-origin-url"}
 }
 
 func loadConfiguration() error {
@@ -139,13 +143,17 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 
 	switch err {
 	case errNoValidUserFound:
+		mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "no valid user found"})
 		http.Error(res, "No valid user found", http.StatusUnauthorized)
 
 	case nil:
 		if !mainCfg.ACL.HasAccess(user, groups, r) {
+			mainCfg.AuditLog.Log(auditEventAccessDenied, r, map[string]string{"username": user})
 			http.Error(res, "Access denied for this resource", http.StatusForbidden)
 			return
 		}
+
+		mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "valid user found", "username": user})
 
 		res.Header().Set("X-Username", user)
 		res.WriteHeader(http.StatusOK)
@@ -163,16 +171,28 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	auditFields := map[string]string{
+		"go": r.FormValue("go"),
+	}
+
 	if r.Method == "POST" {
 		err := loginUser(res, r)
 		switch err {
 		case errNoValidUserFound:
+			auditFields["reason"] = "invalid credentials"
+			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields)
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
+
 		case nil:
+			mainCfg.AuditLog.Log(auditEventLoginSuccess, r, auditFields)
 			http.Redirect(res, r, r.FormValue("go"), http.StatusFound)
 			return
+
 		default:
+			auditFields["reason"] = "error"
+			auditFields["error"] = err.Error()
+			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields)
 			log.WithError(err).Error("Login failed with unexpected error")
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
@@ -191,6 +211,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 }
 
 func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {
+	mainCfg.AuditLog.Log(auditEventLogout, r, nil)
 	if err := logoutUser(res, r); err != nil {
 		log.WithError(err).Error("Failed to logout user")
 		http.Error(res, "Something went wrong", http.StatusInternalServerError)

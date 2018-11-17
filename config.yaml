@@ -19,6 +19,14 @@ listen:
   addr: "127.0.0.1"
   port: 8082
 
+audit_log:
+  targets:
+    - fd://stdout
+    - file:///var/log/nginx-sso/audit.jsonl
+  events: ['access_denied', 'login_success', 'login_failure', 'logout', 'validate']
+  headers: ['x-origin-uri']
+  trusted_ip_headers: ["X-Forwarded-For", "RemoteAddr", "X-Real-IP"]
+
 acl:
   rule_sets:
   - rules:
