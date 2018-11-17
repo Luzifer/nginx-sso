@@ -1,3 +1,7 @@
+# 0.11.0 / 2018-11-17
+
+  * [#17] Implement audit logging
+
 # 0.10.0 / 2018-09-24
 
   * Fix TLS dialing (#16)
