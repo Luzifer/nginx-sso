@@ -60,7 +60,9 @@ func (a *auditLogger) Log(event auditEvent, r *http.Request, extraFields map[str
 
 	headers := map[string]string{}
 	for _, k := range a.Headers {
-		headers[k] = r.Header.Get(k)
+		if v := r.Header.Get(k); v != "" {
+			headers[k] = v
+		}
 	}
 
 	evt["headers"] = headers
