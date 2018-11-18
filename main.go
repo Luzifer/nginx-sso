@@ -86,7 +86,7 @@ func init() {
 	mainCfg.Listen.Addr = "127.0.0.1"
 	mainCfg.Listen.Port = 8082
 	mainCfg.AuditLog.TrustedIPHeaders = []string{"X-Forwarded-For", "RemoteAddr", "X-Real-IP"}
-	mainCfg.AuditLog.Headers = []string{"x-origin-url"}
+	mainCfg.AuditLog.Headers = []string{"x-origin-uri"}
 }
 
 func loadConfiguration() error {
