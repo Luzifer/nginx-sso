@@ -1,3 +1,7 @@
+# 0.11.1 / 2018-11-18
+
+  * [#19] Documentation improvements (#20)
+
 # 0.11.0 / 2018-11-17
 
   * [#17] Implement audit logging
