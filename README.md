@@ -43,6 +43,13 @@ server {
     proxy_pass http://127.0.0.1:1720/;
   }
 
+  # If the user is lead to /logout redirect them to the logout endpoint
+  # of ngninx-sso which then will redirect the user to / on the current host
+  location /logout {
+    # Another server{} directive also proxying to http://127.0.0.1:8082
+    return 302 https://login.luzifer.io/logout?go=$scheme://$http_host/;
+  }
+
   location /sso-auth {
     # Do not allow requests from outside
     internal;
@@ -68,6 +75,8 @@ server {
   }
 }
 ```
+
+To implement a logout you can send the user to the `/logout?go=<url>` endpoint which will ensure the cookie-stored login will be erased.
 
 ## Configuration
 
