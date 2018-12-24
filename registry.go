@@ -30,9 +30,12 @@ type authenticator interface {
 	// to authenticate the user or throw an error. If the user has
 	// successfully logged in the persistent cookie should be written
 	// in order to use DetectUser for the next login.
+	// With the login result an array of mfaConfig must be returned. In
+	// case there is no MFA config or the provider does not support MFA
+	// return nil.
 	// If the user did not login correctly the errNoValidUserFound
 	// needs to be returned
-	Login(res http.ResponseWriter, r *http.Request) (user string, err error)
+	Login(res http.ResponseWriter, r *http.Request) (user string, mfaConfigs []mfaConfig, err error)
 
 	// LoginFields needs to return the fields required for this login
 	// method. If no login using this method is possible the function
@@ -116,23 +119,23 @@ func detectUser(res http.ResponseWriter, r *http.Request) (string, []string, err
 	return "", nil, errNoValidUserFound
 }
 
-func loginUser(res http.ResponseWriter, r *http.Request) (string, error) {
+func loginUser(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
 	authenticatorRegistryMutex.RLock()
 	defer authenticatorRegistryMutex.RUnlock()
 
 	for _, a := range activeAuthenticators {
-		user, err := a.Login(res, r)
+		user, mfaCfgs, err := a.Login(res, r)
 		switch err {
 		case nil:
-			return user, nil
+			return user, mfaCfgs, nil
 		case errNoValidUserFound:
 			// This is okay.
 		default:
-			return "", err
+			return "", nil, err
 		}
 	}
 
-	return "", errNoValidUserFound
+	return "", nil, errNoValidUserFound
 }
 
 func logoutUser(res http.ResponseWriter, r *http.Request) error {

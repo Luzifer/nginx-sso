@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Luzifer/go_helpers/str"
 	"golang.org/x/crypto/bcrypt"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/Luzifer/go_helpers/str"
 )
 
 func init() {
@@ -106,7 +107,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, error) {
+func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -121,10 +122,10 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, err
 		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 		sess.Options = mainCfg.GetSessionOpts()
 		sess.Values["user"] = u
-		return u, sess.Save(r, res)
+		return u, nil, sess.Save(r, res)
 	}
 
-	return "", errNoValidUserFound
+	return "", nil, errNoValidUserFound
 }
 
 // LoginFields needs to return the fields required for this login

@@ -8,6 +8,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type mfaConfig struct {
+	Provider   string
+	Attributes map[string]interface{}
+}
+
+func newMFAConfig(provider string, attrs map[string]interface{}) mfaConfig {
+	return mfaConfig{Provider: provider, Attributes: attrs}
+}
+
+func (m mfaConfig) AttributeString(key string) string {
+	if v, ok := m.Attributes[key]; ok {
+		if sv, ok := v.(string); ok {
+			return sv
+		}
+	}
+
+	return ""
+}
+
 type mfaProvider interface {
 	// ProviderID needs to return an unique string to identify
 	// this special MFA provider
@@ -21,11 +40,7 @@ type mfaProvider interface {
 
 	// ValidateMFA takes the user from the login cookie and performs a
 	// validation against the provided MFA configuration for this user
-	ValidateMFA(res http.ResponseWriter, r *http.Request, user string) error
-
-	// UserHasMFA returns true in case there is a MFA configuration for
-	// the provided user within this MFA provider
-	UserHasMFA(user string) bool
+	ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []mfaConfig) error
 }
 
 var (
@@ -64,21 +79,8 @@ func initializeMFAProviders(yamlSource []byte) error {
 	return nil
 }
 
-func userHasMFA(user string) bool {
-	mfaRegistryMutex.RLock()
-	defer mfaRegistryMutex.RUnlock()
-
-	for _, m := range activeMFAProviders {
-		if m.UserHasMFA(user) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func validateMFA(res http.ResponseWriter, r *http.Request, user string) error {
-	if !userHasMFA(user) {
+func validateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []mfaConfig) error {
+	if mfaCfgs == nil || len(mfaCfgs) == 0 {
 		// User has no configured MFA devices, their MFA is automatically valid
 		return nil
 	}
@@ -87,7 +89,7 @@ func validateMFA(res http.ResponseWriter, r *http.Request, user string) error {
 	defer mfaRegistryMutex.RUnlock()
 
 	for _, m := range activeMFAProviders {
-		err := m.ValidateMFA(res, r, user)
+		err := m.ValidateMFA(res, r, user, mfaCfgs)
 		switch err {
 		case nil:
 			// Validated successfully

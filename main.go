@@ -180,7 +180,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "POST" {
-		user, err := loginUser(res, r)
+		user, mfaCfgs, err := loginUser(res, r)
 		switch err {
 		case errNoValidUserFound:
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
@@ -193,7 +193,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = validateMFA(res, r, user)
+		err = validateMFA(res, r, user, mfaCfgs)
 		switch err {
 		case errNoValidUserFound:
 			auditFields["reason"] = "invalid credentials"
