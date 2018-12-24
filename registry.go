@@ -169,7 +169,7 @@ func getFrontendAuthenticators() map[string][]loginField {
 		}
 		output[a.AuthenticatorID()] = a.LoginFields()
 
-		if a.SupportsMFA() {
+		if a.SupportsMFA() && !mainCfg.Login.HideMFAField {
 			output[a.AuthenticatorID()] = append(output[a.AuthenticatorID()], mfaLoginField)
 		}
 	}

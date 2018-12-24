@@ -36,6 +36,7 @@ type mainConfig struct {
 	Login struct {
 		Title         string            `yaml:"title"`
 		DefaultMethod string            `yaml:"default_method"`
+		HideMFAField  bool              `yaml:"hide_mfa_field"`
 		Names         map[string]string `yaml:"names"`
 	} `yaml:"login"`
 }

@@ -3,6 +3,7 @@
 login:
   title: "luzifer.io - Login"
   default_method: "simple"
+  hide_mfa_field: false
   names:
     simple: "Username / Password"
     yubikey: "Yubikey"

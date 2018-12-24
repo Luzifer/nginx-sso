@@ -92,12 +92,15 @@ The login form can be customized with its wording and the default login method.
 login:
   title: "luzifer.io - Login"
   default_method: "simple"
+  hide_mfa_field: false
   names:
     simple: "Username / Password"
     yubikey: "Yubikey"
 ```
 
 Most options should explain themselves, the `names` dictionary maps IDs of the authentication methods (shown in the title of their config section below) to human readable strings. You can set any string you need and your user recognizes.
+
+In case you don't want to show up the "MFA Token" fields even though the providers being used does support them (for example if you are not using MFA and don't want to confuse your users) you can set the `hide_mfa_field` flag to hide them.
 
 ### Main configuration: Cookie Settings
 
