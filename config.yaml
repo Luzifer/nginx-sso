@@ -98,7 +98,7 @@ providers:
       luzifer:
         - provider: google
           attributes:
-            secret: asdgsdfhgshf
+            secret: MZXW6YTBOIFA
         - provider: yubikey
           attributes:
             device: ccccccfcvuul
