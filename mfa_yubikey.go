@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/GeertJohan/yubigo"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -25,7 +26,7 @@ func (m mfaYubikey) ProviderID() (id string) { return "yubikey" }
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the errProviderUnconfigured
-func (m mfaYubikey) Configure(yamlSource []byte) (err error) {
+func (m *mfaYubikey) Configure(yamlSource []byte) (err error) {
 	envelope := struct {
 		MFA struct {
 			Yubikey *mfaYubikey `yaml:"yubikey"`
@@ -49,11 +50,11 @@ func (m mfaYubikey) Configure(yamlSource []byte) (err error) {
 // ValidateMFA takes the user from the login cookie and performs a
 // validation against the provided MFA configuration for this user
 func (m mfaYubikey) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []mfaConfig) error {
-	keyInput := r.FormValue(mfaLoginFieldName)
+	var keyInput string
 
 	yubiAuth, err := yubigo.NewYubiAuth(m.ClientID, m.SecretKey)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Unable to create Yubikey client")
 	}
 
 	for _, c := range mfaCfgs {
@@ -61,14 +62,19 @@ func (m mfaYubikey) ValidateMFA(res http.ResponseWriter, r *http.Request, user s
 			continue
 		}
 
-		if !strings.HasPrefix(keyInput, c.AttributeString("device")) {
-			// Might be a valid OTP but is not the key configured in this config
+		for key, values := range r.Form {
+			if strings.HasSuffix(key, mfaLoginFieldName) && strings.HasPrefix(values[0], c.AttributeString("device")) {
+				keyInput = values[0]
+			}
+		}
+
+		if keyInput == "" {
 			continue
 		}
 
 		_, ok, err := yubiAuth.Verify(keyInput)
 		if err != nil && !strings.Contains(err.Error(), "OTP has wrong length.") {
-			return err
+			return errors.Wrap(err, "OTP verification failed")
 		}
 
 		if ok {

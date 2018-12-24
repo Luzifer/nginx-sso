@@ -41,8 +41,10 @@ func (m mfaGoogle) ValidateMFA(res http.ResponseWriter, r *http.Request, user st
 			return errors.Wrap(err, "Generating the MFA token failed")
 		}
 
-		if r.FormValue(mfaLoginFieldName) == token {
-			return nil
+		for key, values := range r.Form {
+			if strings.HasSuffix(key, mfaLoginFieldName) && values[0] == token {
+				return nil
+			}
 		}
 	}
 
