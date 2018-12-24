@@ -74,7 +74,7 @@ providers:
       allow_insecure: false
 
   # Authentication against embedded user database
-  # Supports: Users, Groups
+  # Supports: Users, Groups, MFA
   simple:
     enable_basic_auth: false
 
@@ -85,6 +85,13 @@ providers:
     # Groupname to users mapping
     groups:
       admins: ["luzifer"]
+
+    # MFA configs: Username to configs mapping
+    mfa:
+      luzifer:
+        - provider: google
+          attributes:
+            secret: asdgsdfhgshf
 
   # Authentication against embedded token directory
   # Supports: Users, Groups

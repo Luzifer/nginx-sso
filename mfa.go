@@ -18,8 +18,8 @@ var mfaLoginField = loginField{
 }
 
 type mfaConfig struct {
-	Provider   string
-	Attributes map[string]interface{}
+	Provider   string                 `yaml:"provider"`
+	Attributes map[string]interface{} `yaml:"attributes"`
 }
 
 func newMFAConfig(provider string, attrs map[string]interface{}) mfaConfig {

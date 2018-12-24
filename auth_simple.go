@@ -15,9 +15,10 @@ func init() {
 }
 
 type authSimple struct {
-	EnableBasicAuth bool                `yaml:"enable_basic_auth"`
-	Users           map[string]string   `yaml:"users"`
-	Groups          map[string][]string `yaml:"groups"`
+	EnableBasicAuth bool                   `yaml:"enable_basic_auth"`
+	Users           map[string]string      `yaml:"users"`
+	Groups          map[string][]string    `yaml:"groups"`
+	MFA             map[string][]mfaConfig `yaml:"mfa"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -122,7 +123,7 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []m
 		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 		sess.Options = mainCfg.GetSessionOpts()
 		sess.Values["user"] = u
-		return u, nil, sess.Save(r, res)
+		return u, a.MFA[u], sess.Save(r, res)
 	}
 
 	return "", nil, errNoValidUserFound
@@ -162,4 +163,4 @@ func (a authSimple) Logout(res http.ResponseWriter, r *http.Request) (err error)
 // configuration return true. If this is true the login interface
 // will display an additional field for this provider for the user
 // to fill in their MFA token.
-func (a authSimple) SupportsMFA() bool { return false }
+func (a authSimple) SupportsMFA() bool { return true }

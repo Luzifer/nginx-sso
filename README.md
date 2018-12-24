@@ -175,6 +175,30 @@ Each `rules` entry has two mandantory and three optional fields of which at leas
 
 The `allow` and `deny` directives are arrays of users and groups. Groups are prefixed using an `@` sign. There is a simple logic: Users before groups, denies before allows. So if you allow the group `@test` containing the user `mike` but deny the user `mike`, mike will not be able to access the matching sites.
 
+### MFA Configuration
+
+Each provider supporting MFA does have some kind of configuration for the MFA providers. As there are multiple MFA providers the configuration sadly isn't that simple and needs to have the following format:
+
+```yaml
+provider: <provider name>
+attributes:
+  <mapping of attributes>
+```
+
+#### Google Authenticator
+
+The provider name here is `google` while the only supported argument at the moment is `secret`. The secret is what you need to provide to your users for them to add the config to their authenticator.
+
+Here is an example of the URI to provide in a QRCode:
+
+```yaml
+provider: google
+attributes:
+  secret: myverysecretsecret
+```
+
+`otpauth://totp/Example:myusername?secret=myverysecretsecret` ([Docs](https://github.com/google/google-authenticator/wiki/Key-Uri-Format))
+
 ### Provider configuration: Atlassian Crowd (`crowd`)
 
 The crowd auth provider connects nginx-sso with an Atlassian Crowd directory server. The SSO authentication cookie used by Jira and Confluence is also used by nginx-sso which means a login in Jira will also perform a login on nginx-sso and vice versa.
@@ -270,11 +294,20 @@ providers:
     groups:
       admins: ["luzifer"]
       users: ["mike"]
+
+    # MFA configs: Username to configs mapping
+    mfa:
+      luzifer:
+        - provider: google
+          attributes:
+            secret: asdgsdfhgshf
 ```
 
 You can see how to configure the provider the example above: No surprises, just ensure you are using bcrypt hashes for the passwords, no other hash functions are supported.
 
 If `enable_basic_auth` is set to `true` the credentials can also be submitted through basic auth. This is useful for services whose clients does not support other types of authentication.
+
+When there is at least one MFA configuration provided for the user inside the `mfa` block the user will be forced to enter a MFA token during login or otherwise the login will fail.
 
 ### Provider configuration: Token Auth (`token`)
 

@@ -334,4 +334,4 @@ func (a authLDAP) getUserGroups(userDN, alias string) ([]string, error) {
 // configuration return true. If this is true the login interface
 // will display an additional field for this provider for the user
 // to fill in their MFA token.
-func (a authLDAP) SupportsMFA() bool { return false }
+func (a authLDAP) SupportsMFA() bool { return false } // TODO: Implement
