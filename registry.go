@@ -45,6 +45,13 @@ type authenticator interface {
 	// Logout is called when the user visits the logout endpoint and
 	// needs to destroy any persistent stored cookies
 	Logout(res http.ResponseWriter, r *http.Request) (err error)
+
+	// SupportsMFA returns the MFA detection capabilities of the login
+	// provider. If the provider can provide mfaConfig objects from its
+	// configuration return true. If this is true the login interface
+	// will display an additional field for this provider for the user
+	// to fill in their MFA token.
+	SupportsMFA() bool
 }
 
 type loginField struct {
@@ -161,6 +168,10 @@ func getFrontendAuthenticators() map[string][]loginField {
 			continue
 		}
 		output[a.AuthenticatorID()] = a.LoginFields()
+
+		if a.SupportsMFA() {
+			output[a.AuthenticatorID()] = append(output[a.AuthenticatorID()], mfaLoginField)
+		}
 	}
 
 	return output

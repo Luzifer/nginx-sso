@@ -8,6 +8,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const mfaLoginFieldName = "mfa-token"
+
+var mfaLoginField = loginField{
+	Label:       "MFA Token",
+	Name:        mfaLoginFieldName,
+	Placeholder: "(optional)",
+	Type:        "text",
+}
+
 type mfaConfig struct {
 	Provider   string
 	Attributes map[string]interface{}

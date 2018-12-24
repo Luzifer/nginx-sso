@@ -180,6 +180,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "POST" {
+		// Simple authentication
 		user, mfaCfgs, err := loginUser(res, r)
 		switch err {
 		case errNoValidUserFound:
@@ -193,6 +194,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// MFA validation against configs from login
 		err = validateMFA(res, r, user, mfaCfgs)
 		switch err {
 		case errNoValidUserFound:

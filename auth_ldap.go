@@ -328,3 +328,10 @@ func (a authLDAP) getUserGroups(userDN, alias string) ([]string, error) {
 
 	return groups, nil
 }
+
+// SupportsMFA returns the MFA detection capabilities of the login
+// provider. If the provider can provide mfaConfig objects from its
+// configuration return true. If this is true the login interface
+// will display an additional field for this provider for the user
+// to fill in their MFA token.
+func (a authLDAP) SupportsMFA() bool { return false }

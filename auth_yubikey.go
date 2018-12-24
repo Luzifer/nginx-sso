@@ -141,3 +141,10 @@ func (a authYubikey) Logout(res http.ResponseWriter, r *http.Request) (err error
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
 }
+
+// SupportsMFA returns the MFA detection capabilities of the login
+// provider. If the provider can provide mfaConfig objects from its
+// configuration return true. If this is true the login interface
+// will display an additional field for this provider for the user
+// to fill in their MFA token.
+func (a authYubikey) SupportsMFA() bool { return false }

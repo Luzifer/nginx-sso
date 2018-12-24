@@ -104,3 +104,10 @@ func (a authToken) LoginFields() []loginField { return nil }
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
 func (a authToken) Logout(res http.ResponseWriter, r *http.Request) error { return nil }
+
+// SupportsMFA returns the MFA detection capabilities of the login
+// provider. If the provider can provide mfaConfig objects from its
+// configuration return true. If this is true the login interface
+// will display an additional field for this provider for the user
+// to fill in their MFA token.
+func (a authToken) SupportsMFA() bool { return false }
