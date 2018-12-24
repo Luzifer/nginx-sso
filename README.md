@@ -199,6 +199,26 @@ attributes:
 
 `otpauth://totp/Example:myusername?secret=myverysecretsecret` ([Docs](https://github.com/google/google-authenticator/wiki/Key-Uri-Format))
 
+#### Yubikey
+
+This provider needs a configuration to function correctly:
+
+```yaml
+mfa:
+  yubikey:
+    # Get your client / secret from https://upgrade.yubico.com/getapikey/
+    client_id: "12345"
+    secret_key: "foobar"
+```
+
+The corresponding expected MFA configuration is as following:
+
+```yaml
+provider: yubikey
+attributes:
+  device: ccccccfcvuul
+```
+
 ### Provider configuration: Atlassian Crowd (`crowd`)
 
 The crowd auth provider connects nginx-sso with an Atlassian Crowd directory server. The SSO authentication cookie used by Jira and Confluence is also used by nginx-sso which means a login in Jira will also perform a login on nginx-sso and vice versa.

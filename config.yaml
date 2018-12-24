@@ -36,6 +36,12 @@ acl:
       regexp: "^/api"
     allow: ["luzifer", "@admins"]
 
+mfa:
+  yubikey:
+    # Get your client / secret from https://upgrade.yubico.com/getapikey/
+    client_id: "12345"
+    secret_key: "foobar"
+
 providers:
   # Authentication against an Atlassian Crowd directory server
   # Supports: Users, Groups
@@ -92,6 +98,9 @@ providers:
         - provider: google
           attributes:
             secret: asdgsdfhgshf
+        - provider: yubikey
+          attributes:
+            device: ccccccfcvuul
 
   # Authentication against embedded token directory
   # Supports: Users, Groups
