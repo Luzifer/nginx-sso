@@ -1,3 +1,7 @@
+# 0.12.0 / 2018-12-24
+
+  * Implement MFA verification for logins (#10)
+
 # 0.11.1 / 2018-11-18
 
   * [#19] Documentation improvements (#20)
