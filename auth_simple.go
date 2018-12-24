@@ -47,6 +47,7 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 	a.EnableBasicAuth = envelope.Providers.Simple.EnableBasicAuth
 	a.Users = envelope.Providers.Simple.Users
 	a.Groups = envelope.Providers.Simple.Groups
+	a.MFA = envelope.Providers.Simple.MFA
 
 	return nil
 }
