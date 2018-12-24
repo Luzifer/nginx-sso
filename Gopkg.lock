@@ -26,6 +26,18 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:b529f4bf748979caa18b599d40d13e8b6e591a74b340f315ce4f95e119c288c2"
+  name = "github.com/boombuler/barcode"
+  packages = [
+    ".",
+    "qr",
+    "utils",
+  ]
+  pruneopts = ""
+  revision = "3cfea5ab600ae37946be2b763b8ec2c1cf2d272d"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:b7eb152b61f41f0c9bcb6cf1187e1470a91d5e01d1e08f8b7bfd722578851720"
   name = "github.com/flosch/pongo2"
@@ -80,6 +92,18 @@
   pruneopts = ""
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  digest = "1:4aea8409c0c3472587636033ab1fa10a2cec1d716449c55d06de4ad96dec0ec1"
+  name = "github.com/pquerna/otp"
+  packages = [
+    ".",
+    "hotp",
+    "totp",
+  ]
+  pruneopts = ""
+  revision = "b7b89250c468c06871d3837bee02e2d5c155ae19"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:42a42c4bc67bed17f40fddf0f24d4403e25e7b96488456cf4248e6d16659d370"
@@ -164,6 +188,7 @@
     "github.com/gorilla/sessions",
     "github.com/jda/go-crowd",
     "github.com/pkg/errors",
+    "github.com/pquerna/otp/totp",
     "github.com/sirupsen/logrus",
     "golang.org/x/crypto/bcrypt",
     "gopkg.in/ldap.v2",
