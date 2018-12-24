@@ -3,6 +3,7 @@
 login:
   title: "luzifer.io - Login"
   default_method: "simple"
+  hide_mfa_field: false
   names:
     simple: "Username / Password"
     yubikey: "Yubikey"
@@ -35,6 +36,12 @@ acl:
     - field: "x-origin-uri"
       regexp: "^/api"
     allow: ["luzifer", "@admins"]
+
+mfa:
+  yubikey:
+    # Get your client / secret from https://upgrade.yubico.com/getapikey/
+    client_id: "12345"
+    secret_key: "foobar"
 
 providers:
   # Authentication against an Atlassian Crowd directory server
@@ -74,7 +81,7 @@ providers:
       allow_insecure: false
 
   # Authentication against embedded user database
-  # Supports: Users, Groups
+  # Supports: Users, Groups, MFA
   simple:
     enable_basic_auth: false
 
@@ -85,6 +92,16 @@ providers:
     # Groupname to users mapping
     groups:
       admins: ["luzifer"]
+
+    # MFA configs: Username to configs mapping
+    mfa:
+      luzifer:
+        - provider: google
+          attributes:
+            secret: MZXW6YTBOIFA
+        - provider: yubikey
+          attributes:
+            device: ccccccfcvuul
 
   # Authentication against embedded token directory
   # Supports: Users, Groups

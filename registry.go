@@ -17,7 +17,7 @@ type authenticator interface {
 	// Configure loads the configuration for the Authenticator from the
 	// global config.yaml file which is passed as a byte-slice.
 	// If no configuration for the Authenticator is supplied the function
-	// needs to return the errAuthenticatorUnconfigured
+	// needs to return the errProviderUnconfigured
 	Configure(yamlSource []byte) (err error)
 
 	// DetectUser is used to detect a user without a login form from
@@ -30,9 +30,12 @@ type authenticator interface {
 	// to authenticate the user or throw an error. If the user has
 	// successfully logged in the persistent cookie should be written
 	// in order to use DetectUser for the next login.
+	// With the login result an array of mfaConfig must be returned. In
+	// case there is no MFA config or the provider does not support MFA
+	// return nil.
 	// If the user did not login correctly the errNoValidUserFound
 	// needs to be returned
-	Login(res http.ResponseWriter, r *http.Request) (err error)
+	Login(res http.ResponseWriter, r *http.Request) (user string, mfaConfigs []mfaConfig, err error)
 
 	// LoginFields needs to return the fields required for this login
 	// method. If no login using this method is possible the function
@@ -42,6 +45,13 @@ type authenticator interface {
 	// Logout is called when the user visits the logout endpoint and
 	// needs to destroy any persistent stored cookies
 	Logout(res http.ResponseWriter, r *http.Request) (err error)
+
+	// SupportsMFA returns the MFA detection capabilities of the login
+	// provider. If the provider can provide mfaConfig objects from its
+	// configuration return true. If this is true the login interface
+	// will display an additional field for this provider for the user
+	// to fill in their MFA token.
+	SupportsMFA() bool
 }
 
 type loginField struct {
@@ -52,8 +62,8 @@ type loginField struct {
 }
 
 var (
-	errAuthenticatorUnconfigured = errors.New("No valid configuration found for this authenticator")
-	errNoValidUserFound          = errors.New("No valid users found")
+	errProviderUnconfigured = errors.New("No valid configuration found for this provider")
+	errNoValidUserFound     = errors.New("No valid users found")
 
 	authenticatorRegistry      = []authenticator{}
 	authenticatorRegistryMutex sync.RWMutex
@@ -80,7 +90,7 @@ func initializeAuthenticators(yamlSource []byte) error {
 		case nil:
 			tmp = append(tmp, a)
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Activated authenticator")
-		case errAuthenticatorUnconfigured:
+		case errProviderUnconfigured:
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Authenticator unconfigured")
 			// This is okay.
 		default:
@@ -116,23 +126,23 @@ func detectUser(res http.ResponseWriter, r *http.Request) (string, []string, err
 	return "", nil, errNoValidUserFound
 }
 
-func loginUser(res http.ResponseWriter, r *http.Request) error {
+func loginUser(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
 	authenticatorRegistryMutex.RLock()
 	defer authenticatorRegistryMutex.RUnlock()
 
 	for _, a := range activeAuthenticators {
-		err := a.Login(res, r)
+		user, mfaCfgs, err := a.Login(res, r)
 		switch err {
 		case nil:
-			return nil
+			return user, mfaCfgs, nil
 		case errNoValidUserFound:
 			// This is okay.
 		default:
-			return err
+			return "", nil, err
 		}
 	}
 
-	return errNoValidUserFound
+	return "", nil, errNoValidUserFound
 }
 
 func logoutUser(res http.ResponseWriter, r *http.Request) error {
@@ -158,6 +168,10 @@ func getFrontendAuthenticators() map[string][]loginField {
 			continue
 		}
 		output[a.AuthenticatorID()] = a.LoginFields()
+
+		if a.SupportsMFA() && !mainCfg.Login.HideMFAField {
+			output[a.AuthenticatorID()] = append(output[a.AuthenticatorID()], mfaLoginField)
+		}
 	}
 
 	return output

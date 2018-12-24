@@ -39,7 +39,7 @@ func (a authLDAP) AuthenticatorID() string { return "ldap" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errAuthenticatorUnconfigured
+// needs to return the errProviderUnconfigured
 func (a *authLDAP) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -52,7 +52,7 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.LDAP == nil {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	a.EnableBasicAuth = envelope.Providers.LDAP.EnableBasicAuth
@@ -141,7 +141,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) error {
+func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -152,14 +152,14 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) error {
 	)
 
 	if userDN, alias, err = a.checkLogin(username, password, a.UsernameAttribute); err != nil {
-		return err
+		return "", nil, err
 	}
 
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 	sess.Options = mainCfg.GetSessionOpts()
 	sess.Values["user"] = userDN
 	sess.Values["alias"] = alias
-	return sess.Save(r, res)
+	return userDN, nil, sess.Save(r, res)
 }
 
 // LoginFields needs to return the fields required for this login
@@ -328,3 +328,10 @@ func (a authLDAP) getUserGroups(userDN, alias string) ([]string, error) {
 
 	return groups, nil
 }
+
+// SupportsMFA returns the MFA detection capabilities of the login
+// provider. If the provider can provide mfaConfig objects from its
+// configuration return true. If this is true the login interface
+// will display an additional field for this provider for the user
+// to fill in their MFA token.
+func (a authLDAP) SupportsMFA() bool { return false } // TODO: Implement

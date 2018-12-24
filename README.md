@@ -92,12 +92,15 @@ The login form can be customized with its wording and the default login method.
 login:
   title: "luzifer.io - Login"
   default_method: "simple"
+  hide_mfa_field: false
   names:
     simple: "Username / Password"
     yubikey: "Yubikey"
 ```
 
 Most options should explain themselves, the `names` dictionary maps IDs of the authentication methods (shown in the title of their config section below) to human readable strings. You can set any string you need and your user recognizes.
+
+In case you don't want to show up the "MFA Token" fields even though the providers being used does support them (for example if you are not using MFA and don't want to confuse your users) you can set the `hide_mfa_field` flag to hide them.
 
 ### Main configuration: Cookie Settings
 
@@ -174,6 +177,50 @@ Each `rules` entry has two mandantory and three optional fields of which at leas
 - `equals` - optional - String which must fully match the contents of the header selected by `field`
 
 The `allow` and `deny` directives are arrays of users and groups. Groups are prefixed using an `@` sign. There is a simple logic: Users before groups, denies before allows. So if you allow the group `@test` containing the user `mike` but deny the user `mike`, mike will not be able to access the matching sites.
+
+### MFA Configuration
+
+Each provider supporting MFA does have some kind of configuration for the MFA providers. As there are multiple MFA providers the configuration sadly isn't that simple and needs to have the following format:
+
+```yaml
+provider: <provider name>
+attributes:
+  <mapping of attributes>
+```
+
+#### Google Authenticator
+
+The provider name here is `google` while the only supported argument at the moment is `secret`. The secret is what you need to provide to your users for them to add the config to their authenticator. (It MUST be base32 encoded!)
+
+Here is an example of the URI to provide in a QRCode:
+
+```yaml
+provider: google
+attributes:
+  secret: MZXW6YTBOIFA
+```
+
+`otpauth://totp/Example:myusername?secret=myverysecretsecret` ([Docs](https://github.com/google/google-authenticator/wiki/Key-Uri-Format))
+
+#### Yubikey
+
+This provider needs a configuration to function correctly:
+
+```yaml
+mfa:
+  yubikey:
+    # Get your client / secret from https://upgrade.yubico.com/getapikey/
+    client_id: "12345"
+    secret_key: "foobar"
+```
+
+The corresponding expected MFA configuration is as following:
+
+```yaml
+provider: yubikey
+attributes:
+  device: ccccccfcvuul
+```
 
 ### Provider configuration: Atlassian Crowd (`crowd`)
 
@@ -270,11 +317,20 @@ providers:
     groups:
       admins: ["luzifer"]
       users: ["mike"]
+
+    # MFA configs: Username to configs mapping
+    mfa:
+      luzifer:
+        - provider: google
+          attributes:
+            secret: asdgsdfhgshf
 ```
 
 You can see how to configure the provider the example above: No surprises, just ensure you are using bcrypt hashes for the passwords, no other hash functions are supported.
 
 If `enable_basic_auth` is set to `true` the credentials can also be submitted through basic auth. This is useful for services whose clients does not support other types of authentication.
+
+When there is at least one MFA configuration provided for the user inside the `mfa` block the user will be forced to enter a MFA token during login or otherwise the login will fail.
 
 ### Provider configuration: Token Auth (`token`)
 

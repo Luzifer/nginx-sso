@@ -25,7 +25,7 @@ func (a authToken) AuthenticatorID() string { return "token" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errAuthenticatorUnconfigured
+// needs to return the errProviderUnconfigured
 func (a *authToken) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -38,7 +38,7 @@ func (a *authToken) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Token == nil {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	a.Tokens = envelope.Providers.Token.Tokens
@@ -92,7 +92,9 @@ func (a authToken) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authToken) Login(res http.ResponseWriter, r *http.Request) error { return errNoValidUserFound }
+func (a authToken) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
+	return "", nil, errNoValidUserFound
+}
 
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
@@ -102,3 +104,10 @@ func (a authToken) LoginFields() []loginField { return nil }
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
 func (a authToken) Logout(res http.ResponseWriter, r *http.Request) error { return nil }
+
+// SupportsMFA returns the MFA detection capabilities of the login
+// provider. If the provider can provide mfaConfig objects from its
+// configuration return true. If this is true the login interface
+// will display an additional field for this provider for the user
+// to fill in their MFA token.
+func (a authToken) SupportsMFA() bool { return false }

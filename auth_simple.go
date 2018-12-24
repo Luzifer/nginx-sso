@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Luzifer/go_helpers/str"
 	"golang.org/x/crypto/bcrypt"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/Luzifer/go_helpers/str"
 )
 
 func init() {
@@ -14,9 +15,10 @@ func init() {
 }
 
 type authSimple struct {
-	EnableBasicAuth bool                `yaml:"enable_basic_auth"`
-	Users           map[string]string   `yaml:"users"`
-	Groups          map[string][]string `yaml:"groups"`
+	EnableBasicAuth bool                   `yaml:"enable_basic_auth"`
+	Users           map[string]string      `yaml:"users"`
+	Groups          map[string][]string    `yaml:"groups"`
+	MFA             map[string][]mfaConfig `yaml:"mfa"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -26,7 +28,7 @@ func (a authSimple) AuthenticatorID() string { return "simple" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errAuthenticatorUnconfigured
+// needs to return the errProviderUnconfigured
 func (a *authSimple) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -39,12 +41,13 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Simple == nil {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	a.EnableBasicAuth = envelope.Providers.Simple.EnableBasicAuth
 	a.Users = envelope.Providers.Simple.Users
 	a.Groups = envelope.Providers.Simple.Groups
+	a.MFA = envelope.Providers.Simple.MFA
 
 	return nil
 }
@@ -106,7 +109,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authSimple) Login(res http.ResponseWriter, r *http.Request) error {
+func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -121,10 +124,10 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) error {
 		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 		sess.Options = mainCfg.GetSessionOpts()
 		sess.Values["user"] = u
-		return sess.Save(r, res)
+		return u, a.MFA[u], sess.Save(r, res)
 	}
 
-	return errNoValidUserFound
+	return "", nil, errNoValidUserFound
 }
 
 // LoginFields needs to return the fields required for this login
@@ -155,3 +158,10 @@ func (a authSimple) Logout(res http.ResponseWriter, r *http.Request) (err error)
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
 }
+
+// SupportsMFA returns the MFA detection capabilities of the login
+// provider. If the provider can provide mfaConfig objects from its
+// configuration return true. If this is true the login interface
+// will display an additional field for this provider for the user
+// to fill in their MFA token.
+func (a authSimple) SupportsMFA() bool { return true }

@@ -28,7 +28,7 @@ func (a authYubikey) AuthenticatorID() string { return "yubikey" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errAuthenticatorUnconfigured
+// needs to return the errProviderUnconfigured
 func (a *authYubikey) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -41,7 +41,7 @@ func (a *authYubikey) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Yubikey == nil {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	a.ClientID = envelope.Providers.Yubikey.ClientID
@@ -89,34 +89,34 @@ func (a authYubikey) DetectUser(res http.ResponseWriter, r *http.Request) (strin
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) error {
+func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
 	keyInput := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "key-input"}, "-"))
 
 	yubiAuth, err := yubigo.NewYubiAuth(a.ClientID, a.SecretKey)
 	if err != nil {
-		return err
+		return "", nil, err
 	}
 
 	_, ok, err := yubiAuth.Verify(keyInput)
 	if err != nil && !strings.Contains(err.Error(), "OTP has wrong length.") {
-		return err
+		return "", nil, err
 	}
 
 	if !ok {
 		// Not a valid authentication
-		return errNoValidUserFound
+		return "", nil, errNoValidUserFound
 	}
 
 	user, ok := a.Devices[keyInput[:12]]
 	if !ok {
 		// We do not have a definition for that key
-		return errNoValidUserFound
+		return "", nil, errNoValidUserFound
 	}
 
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 	sess.Options = mainCfg.GetSessionOpts()
 	sess.Values["user"] = user
-	return sess.Save(r, res)
+	return user, nil, sess.Save(r, res)
 }
 
 // LoginFields needs to return the fields required for this login
@@ -141,3 +141,10 @@ func (a authYubikey) Logout(res http.ResponseWriter, r *http.Request) (err error
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
 }
+
+// SupportsMFA returns the MFA detection capabilities of the login
+// provider. If the provider can provide mfaConfig objects from its
+// configuration return true. If this is true the login interface
+// will display an additional field for this provider for the user
+// to fill in their MFA token.
+func (a authYubikey) SupportsMFA() bool { return false }

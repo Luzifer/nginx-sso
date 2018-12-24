@@ -28,7 +28,7 @@ func (a authCrowd) AuthenticatorID() string { return "crowd" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errAuthenticatorUnconfigured
+// needs to return the errProviderUnconfigured
 func (a *authCrowd) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -41,7 +41,7 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Crowd == nil {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	a.URL = envelope.Providers.Crowd.URL
@@ -49,7 +49,7 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 	a.AppPassword = envelope.Providers.Crowd.AppPassword
 
 	if a.AppName == "" || a.AppPassword == "" {
-		return errAuthenticatorUnconfigured
+		return errProviderUnconfigured
 	}
 
 	var err error
@@ -106,13 +106,13 @@ func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) error {
+func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
 	cc, err := a.crowd.GetCookieConfig()
 	if err != nil {
-		return err
+		return "", nil, err
 	}
 
 	sess, err := a.crowd.NewSession(username, password, r.RemoteAddr)
@@ -120,7 +120,7 @@ func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) error {
 		log.WithFields(log.Fields{
 			"username": username,
 		}).WithError(err).Debug("Crowd authentication failed")
-		return errNoValidUserFound
+		return "", nil, errNoValidUserFound
 	}
 
 	http.SetCookie(res, &http.Cookie{
@@ -133,7 +133,7 @@ func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) error {
 		HttpOnly: true,
 	})
 
-	return nil
+	return username, nil, nil
 }
 
 // LoginFields needs to return the fields required for this login
@@ -176,3 +176,10 @@ func (a authCrowd) Logout(res http.ResponseWriter, r *http.Request) (err error) 
 
 	return nil
 }
+
+// SupportsMFA returns the MFA detection capabilities of the login
+// provider. If the provider can provide mfaConfig objects from its
+// configuration return true. If this is true the login interface
+// will display an additional field for this provider for the user
+// to fill in their MFA token.
+func (a authCrowd) SupportsMFA() bool { return false }
