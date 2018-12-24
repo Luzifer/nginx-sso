@@ -190,14 +190,14 @@ attributes:
 
 #### Google Authenticator
 
-The provider name here is `google` while the only supported argument at the moment is `secret`. The secret is what you need to provide to your users for them to add the config to their authenticator.
+The provider name here is `google` while the only supported argument at the moment is `secret`. The secret is what you need to provide to your users for them to add the config to their authenticator. (It MUST be base32 encoded!)
 
 Here is an example of the URI to provide in a QRCode:
 
 ```yaml
 provider: google
 attributes:
-  secret: myverysecretsecret
+  secret: MZXW6YTBOIFA
 ```
 
 `otpauth://totp/Example:myusername?secret=myverysecretsecret` ([Docs](https://github.com/google/google-authenticator/wiki/Key-Uri-Format))
