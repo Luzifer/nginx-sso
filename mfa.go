@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -27,9 +26,9 @@ func newMFAConfig(provider string, attrs map[string]interface{}) mfaConfig {
 	return mfaConfig{Provider: provider, Attributes: attrs}
 }
 
-func (m mfaConfig) AttributeInt64(key string) int64 {
+func (m mfaConfig) AttributeInt(key string) int {
 	if v, ok := m.Attributes[key]; ok && v != "" {
-		if sv, err := strconv.ParseInt(v.(string), 10, 64); err == nil {
+		if sv, ok := v.(int); ok {
 			return sv
 		}
 	}

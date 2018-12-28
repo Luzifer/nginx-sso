@@ -65,15 +65,15 @@ func (m mfaTOTP) exec(c mfaConfig) (string, error) {
 		Algorithm: otp.AlgorithmSHA1,
 	}
 
-	if period := c.AttributeInt64("period"); period > 0 {
+	if period := c.AttributeInt("period"); period > 0 {
 		generatorOpts.Period = uint(period)
 	}
 
-	if skew := c.AttributeInt64("skew"); skew > 0 {
+	if skew := c.AttributeInt("skew"); skew > 0 {
 		generatorOpts.Skew = uint(skew)
 	}
 
-	if digits := c.AttributeInt64("digits"); digits > 0 {
+	if digits := c.AttributeInt("digits"); digits > 0 {
 		generatorOpts.Digits = otp.Digits(digits)
 	}
 
