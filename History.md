@@ -1,3 +1,7 @@
+# 0.13.0 / 2018-12-28
+
+  * Add support for Duo MFA (#28)
+
 # 0.12.0 / 2018-12-24
 
   * Implement MFA verification for logins (#10)
