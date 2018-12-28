@@ -94,5 +94,5 @@ func (m mfaTOTP) exec(c mfaConfig) (string, error) {
 		secret = secret + strings.Repeat("=", 8-n)
 	}
 
-	return totp.GenerateCode(strings.ToUpper(secret), time.Now())
+	return totp.GenerateCodeCustom(strings.ToUpper(secret), time.Now(), generatorOpts)
 }
