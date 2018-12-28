@@ -1,3 +1,8 @@
+# 0.14.0 / 2018-12-29
+
+  * [#25] Make TOTP provider fully configurable (#29)
+  * Move documentation to project Wiki
+
 # 0.13.0 / 2018-12-28
 
   * Add support for Duo MFA (#28)
