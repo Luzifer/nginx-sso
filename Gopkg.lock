@@ -39,6 +39,17 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:6911d618517b98a7b59bf3f244ce648a29c81e2c4413f2cda9224a1d2a9b4840"
+  name = "github.com/duosecurity/duo_api_golang"
+  packages = [
+    ".",
+    "authapi",
+  ]
+  pruneopts = ""
+  revision = "61e0defebf22863592a27013b399685d0def12b6"
+
+[[projects]]
+  branch = "master"
   digest = "1:b7eb152b61f41f0c9bcb6cf1187e1470a91d5e01d1e08f8b7bfd722578851720"
   name = "github.com/flosch/pongo2"
   packages = ["."]
@@ -183,6 +194,8 @@
     "github.com/GeertJohan/yubigo",
     "github.com/Luzifer/go_helpers/str",
     "github.com/Luzifer/rconfig",
+    "github.com/duosecurity/duo_api_golang",
+    "github.com/duosecurity/duo_api_golang/authapi",
     "github.com/flosch/pongo2",
     "github.com/gorilla/context",
     "github.com/gorilla/sessions",
