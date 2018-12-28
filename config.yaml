@@ -43,6 +43,12 @@ mfa:
     client_id: "12345"
     secret_key: "foobar"
 
+  duo:
+    ikey: "IKEY"
+    skey: "SKEY"
+    host: "HOST"
+    user_agent: "nginx-sso"
+
 providers:
   # Authentication against an Atlassian Crowd directory server
   # Supports: Users, Groups
@@ -96,6 +102,7 @@ providers:
     # MFA configs: Username to configs mapping
     mfa:
       luzifer:
+        - provider: duo
         - provider: google
           attributes:
             secret: MZXW6YTBOIFA
