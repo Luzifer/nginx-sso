@@ -44,6 +44,7 @@ mfa:
     secret_key: "foobar"
 
   duo:
+    # Get your ikey / skey / host from  https://duo.com/docs/duoweb#first-steps
     ikey: "IKEY"
     skey: "SKEY"
     host: "HOST"
@@ -103,9 +104,15 @@ providers:
     mfa:
       luzifer:
         - provider: duo
-        - provider: google
+
+        - provider: totp
           attributes:
-            secret: MZXW6YTBOIFA
+            secret: MZXW6YTBOIFA  # required
+            period: 30            # optional, defaults to 30 (Google Authenticator)
+            skew: 1               # optional, defaults to 1 (Google Authenticator)
+            digits: 8             # optional, defaults to 6 (Google Authenticator)
+            algorithm: sha1       # optional (sha1, sha256, sha512), defaults to sha1 (Google Authenticator)
+
         - provider: yubikey
           attributes:
             device: ccccccfcvuul
