@@ -79,6 +79,8 @@ func (m mfaTOTP) exec(c mfaConfig) (string, error) {
 
 	if algorithm := c.AttributeString("algorithm"); algorithm != "" {
 		switch algorithm {
+		case "sha1":
+			generatorOpts.Algorithm = otp.AlgorithmSHA1
 		case "sha256":
 			generatorOpts.Algorithm = otp.AlgorithmSHA256
 		case "sha512":
