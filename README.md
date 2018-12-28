@@ -188,6 +188,26 @@ attributes:
   <mapping of attributes>
 ```
 
+#### Duo
+
+This provider needs a configuration to function correctly:
+
+```yaml
+mfa:
+  duo:
+    # Get your ikey / skey / host from  https://duo.com/docs/duoweb#first-steps
+    ikey: "<IKEY>"
+    skey: "<SKEY>"
+    host: "<API HOST>"
+    user_agent: "nginx-sso"
+```
+
+The corresponding expected MFA configuration is as following:
+
+```yaml
+provider: duo
+```
+
 #### Google Authenticator
 
 The provider name here is `google` while the only supported argument at the moment is `secret`. The secret is what you need to provide to your users for them to add the config to their authenticator. (It MUST be base32 encoded!)

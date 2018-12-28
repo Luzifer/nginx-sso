@@ -47,7 +47,7 @@ mfa:
     ikey: "IKEY"
     skey: "SKEY"
     host: "HOST"
-    userAgent: "nginx-sso"
+    user_agent: "nginx-sso"
 
 providers:
   # Authentication against an Atlassian Crowd directory server

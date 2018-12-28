@@ -2,22 +2,27 @@ package main
 
 import (
 	"net/http"
-	"time"
 	"strings"
+	"time"
+
 	"github.com/duosecurity/duo_api_golang"
 	"github.com/duosecurity/duo_api_golang/authapi"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
+
+const mfaDuoResponseAllow = "allow"
+const mfaDuoRequestTimeout = 10 * time.Second
 
 func init() {
 	registerMFAProvider(&mfaDuo{})
 }
 
-type mfaDuo struct{
-	Ikey  string `yaml:"ikey"`
-	Skey string `yaml:"skey"`
-	Host string `yaml:"host"`
-	UserAgent string `yaml:"userAgent"`
+type mfaDuo struct {
+	IKey      string `yaml:"ikey"`
+	SKey      string `yaml:"skey"`
+	Host      string `yaml:"host"`
+	UserAgent string `yaml:"user_agent"`
 }
 
 // ProviderID needs to return an unique string to identify
@@ -43,8 +48,8 @@ func (m *mfaDuo) Configure(yamlSource []byte) (err error) {
 		return errProviderUnconfigured
 	}
 
-	m.Ikey = envelope.MFA.Duo.Ikey
-	m.Skey = envelope.MFA.Duo.Skey
+	m.IKey = envelope.MFA.Duo.IKey
+	m.SKey = envelope.MFA.Duo.SKey
 	m.Host = envelope.MFA.Duo.Host
 	m.UserAgent = envelope.MFA.Duo.UserAgent
 	return nil
@@ -59,22 +64,28 @@ func (m mfaDuo) ValidateMFA(res http.ResponseWriter, r *http.Request, user strin
 		if c.Provider != m.ProviderID() {
 			continue
 		}
-		ip := r.Header.Get("X-Real-IP")
-		duo := authapi.NewAuthApi(*duoapi.NewDuoApi(m.Ikey,m.Skey,m.Host,m.UserAgent,duoapi.SetTimeout(10*time.Second)))
+		remoteIP := r.Header.Get("X-Real-IP")
+		duo := authapi.NewAuthApi(*duoapi.NewDuoApi(m.IKey, m.SKey, m.Host, m.UserAgent, duoapi.SetTimeout((mfaDuoRequestTimeout))))
 		for key, values := range r.Form {
 			if strings.HasSuffix(key, mfaLoginFieldName) && len(values[0]) > 0 {
 				keyInput = values[0]
 			}
 		}
 		//Check if MFA token provided and fallover to push if not supplied
-		if keyInput != ""{ 
-			auth, _ := duo.Auth("passcode",authapi.AuthUsername(user),authapi.AuthPasscode(keyInput),authapi.AuthIpAddr(ip))
-			if auth.Response.Result == "allow" {
+		if keyInput != "" {
+			auth, err := duo.Auth("passcode", authapi.AuthUsername(user), authapi.AuthPasscode(keyInput), authapi.AuthIpAddr(remoteIP))
+			if err != nil {
+				return errors.Wrap(err, "Unable to authenticate with Duo.")
+			}
+			if auth.Response.Result == mfaDuoResponseAllow {
 				return nil
 			}
 		} else {
-			auth, _ := duo.Auth("auto",authapi.AuthUsername(user),authapi.AuthDevice("auto"),authapi.AuthIpAddr(ip))
-			if auth.Response.Result == "allow" {
+			auth, err := duo.Auth("auto", authapi.AuthUsername(user), authapi.AuthDevice("auto"), authapi.AuthIpAddr(remoteIP))
+			if err != nil {
+				return errors.Wrap(err, "Unable to authenticate with Duo.")
+			}
+			if auth.Response.Result == mfaDuoResponseAllow {
 				return nil
 			}
 		}
@@ -83,4 +94,3 @@ func (m mfaDuo) ValidateMFA(res http.ResponseWriter, r *http.Request, user strin
 	// Report this provider was not able to verify the MFA request
 	return errNoValidUserFound
 }
-
