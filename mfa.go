@@ -26,6 +26,16 @@ func newMFAConfig(provider string, attrs map[string]interface{}) mfaConfig {
 	return mfaConfig{Provider: provider, Attributes: attrs}
 }
 
+func (m mfaConfig) AttributeInt(key string) int {
+	if v, ok := m.Attributes[key]; ok && v != "" {
+		if sv, ok := v.(int); ok {
+			return sv
+		}
+	}
+
+	return 0
+}
+
 func (m mfaConfig) AttributeString(key string) string {
 	if v, ok := m.Attributes[key]; ok {
 		if sv, ok := v.(string); ok {
