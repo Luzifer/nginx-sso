@@ -22,10 +22,6 @@ type mfaConfig struct {
 	Attributes map[string]interface{} `yaml:"attributes"`
 }
 
-func newMFAConfig(provider string, attrs map[string]interface{}) mfaConfig {
-	return mfaConfig{Provider: provider, Attributes: attrs}
-}
-
 func (m mfaConfig) AttributeInt(key string) int {
 	if v, ok := m.Attributes[key]; ok && v != "" {
 		if sv, ok := v.(int); ok {
@@ -99,7 +95,7 @@ func initializeMFAProviders(yamlSource []byte) error {
 }
 
 func validateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []mfaConfig) error {
-	if mfaCfgs == nil || len(mfaCfgs) == 0 {
+	if len(mfaCfgs) == 0 {
 		// User has no configured MFA devices, their MFA is automatically valid
 		return nil
 	}

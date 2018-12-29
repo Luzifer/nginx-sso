@@ -11,6 +11,11 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+const (
+	authLDAPProtoLDAP  = "ldap"
+	authLDAPProtoLDAPs = "ldaps"
+)
+
 func init() {
 	registerAuthenticator(&authLDAP{})
 }
@@ -98,12 +103,13 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 
 	if a.EnableBasicAuth {
 		if basicUser, basicPass, ok := r.BasicAuth(); ok {
-			if userDN, a, err := a.checkLogin(basicUser, basicPass, a.UsernameAttribute); err != nil {
+			userDN, a, err := a.checkLogin(basicUser, basicPass, a.UsernameAttribute)
+			if err != nil {
 				return "", nil, err
-			} else {
-				user = userDN
-				alias = a
 			}
+
+			user = userDN
+			alias = a
 		}
 	}
 
@@ -155,7 +161,7 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []mfa
 		return "", nil, err
 	}
 
-	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
 	sess.Options = mainCfg.GetSessionOpts()
 	sess.Values["user"] = userDN
 	sess.Values["alias"] = alias
@@ -185,7 +191,7 @@ func (a authLDAP) LoginFields() (fields []loginField) {
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
 func (a authLDAP) Logout(res http.ResponseWriter, r *http.Request) (err error) {
-	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
 	sess.Options = mainCfg.GetSessionOpts()
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
@@ -240,9 +246,9 @@ func (a authLDAP) portFromScheme(scheme, override string) string {
 	}
 
 	switch scheme {
-	case "ldap":
+	case authLDAPProtoLDAP:
 		return "389"
-	case "ldaps":
+	case authLDAPProtoLDAPs:
 		return "636"
 	default:
 		return ""
@@ -262,13 +268,14 @@ func (a authLDAP) dial() (*ldap.Conn, error) {
 	var l *ldap.Conn
 
 	switch u.Scheme {
-	case "ldap":
+	case authLDAPProtoLDAP:
 		l, err = ldap.Dial("tcp", fmt.Sprintf("%s:%s", host, a.portFromScheme(u.Scheme, port)))
 
-	case "ldaps":
+	case authLDAPProtoLDAPs:
 		tlsConfig := &tls.Config{ServerName: host}
 
 		if a.TLSConfig != nil && (a.TLSConfig.ValidateHostname != "" || a.TLSConfig.AllowInsecure) {
+			// #nosec G402 - InsecureSkipVerify is required for internal certs
 			tlsConfig = &tls.Config{
 				ServerName:         a.TLSConfig.ValidateHostname,
 				InsecureSkipVerify: a.TLSConfig.AllowInsecure,
@@ -288,7 +295,7 @@ func (a authLDAP) dial() (*ldap.Conn, error) {
 		return nil, fmt.Errorf("Unable to connect to LDAP: %s", err)
 	}
 
-	if err := l.Bind(a.ManagerDN, a.ManagerPassword); err != nil {
+	if err = l.Bind(a.ManagerDN, a.ManagerPassword); err != nil {
 		return nil, fmt.Errorf("Unable to authenticate with manager_dn: %s", err)
 	}
 

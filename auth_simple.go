@@ -121,7 +121,7 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []m
 			continue
 		}
 
-		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
 		sess.Options = mainCfg.GetSessionOpts()
 		sess.Values["user"] = u
 		return u, a.MFA[u], sess.Save(r, res)
@@ -153,7 +153,7 @@ func (a authSimple) LoginFields() (fields []loginField) {
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
 func (a authSimple) Logout(res http.ResponseWriter, r *http.Request) (err error) {
-	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
 	sess.Options = mainCfg.GetSessionOpts()
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)

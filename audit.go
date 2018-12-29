@@ -52,10 +52,8 @@ func (a *auditLogger) Log(event auditEvent, r *http.Request, extraFields map[str
 	evt["event_type"] = event
 	evt["remote_addr"] = a.findIP(r)
 
-	if extraFields != nil {
-		for k, v := range extraFields {
-			evt[k] = v
-		}
+	for k, v := range extraFields {
+		evt[k] = v
 	}
 
 	headers := map[string]string{}

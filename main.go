@@ -96,11 +96,11 @@ func loadConfiguration() error {
 		return fmt.Errorf("Unable to read configuration file: %s", err)
 	}
 
-	if err := yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
+	if err = yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
 		return fmt.Errorf("Unable to load configuration file: %s", err)
 	}
 
-	if err := initializeAuthenticators(yamlSource); err != nil {
+	if err = initializeAuthenticators(yamlSource); err != nil {
 		return fmt.Errorf("Unable to configure authentication: %s", err)
 	}
 
@@ -148,17 +148,17 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 
 	switch err {
 	case errNoValidUserFound:
-		mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "no valid user found"})
+		mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "no valid user found"}) // #nosec G104 - This is only logging
 		http.Error(res, "No valid user found", http.StatusUnauthorized)
 
 	case nil:
 		if !mainCfg.ACL.HasAccess(user, groups, r) {
-			mainCfg.AuditLog.Log(auditEventAccessDenied, r, map[string]string{"username": user})
+			mainCfg.AuditLog.Log(auditEventAccessDenied, r, map[string]string{"username": user}) // #nosec G104 - This is only logging
 			http.Error(res, "Access denied for this resource", http.StatusForbidden)
 			return
 		}
 
-		mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "valid user found", "username": user})
+		mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "valid user found", "username": user}) // #nosec G104 - This is only logging
 
 		res.Header().Set("X-Username", user)
 		res.WriteHeader(http.StatusOK)
@@ -200,20 +200,20 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		switch err {
 		case errNoValidUserFound:
 			auditFields["reason"] = "invalid credentials"
-			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields)
-			res.Header().Del("Set-Cookie") // Remove login cookie
+			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
+			res.Header().Del("Set-Cookie")                               // Remove login cookie
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
 
 		case nil:
-			mainCfg.AuditLog.Log(auditEventLoginSuccess, r, auditFields)
+			mainCfg.AuditLog.Log(auditEventLoginSuccess, r, auditFields) // #nosec G104 - This is only logging
 			http.Redirect(res, r, r.FormValue("go"), http.StatusFound)
 			return
 
 		default:
 			auditFields["reason"] = "error"
 			auditFields["error"] = err.Error()
-			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields)
+			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
 			log.WithError(err).Error("Login failed with unexpected error")
 			res.Header().Del("Set-Cookie") // Remove login cookie
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
@@ -233,7 +233,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 }
 
 func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {
-	mainCfg.AuditLog.Log(auditEventLogout, r, nil)
+	mainCfg.AuditLog.Log(auditEventLogout, r, nil) // #nosec G104 - This is only logging
 	if err := logoutUser(res, r); err != nil {
 		log.WithError(err).Error("Failed to logout user")
 		http.Error(res, "Something went wrong", http.StatusInternalServerError)
