@@ -1,6 +1,7 @@
 package main
 
 import (
+	yaml "gopkg.in/yaml.v2"
 	"net/http"
 	"strings"
 	"time"
@@ -14,7 +15,9 @@ func init() {
 	registerMFAProvider(&mfaTOTP{})
 }
 
-type mfaTOTP struct{}
+type mfaTOTP struct {
+	Enabled bool `yaml:"enabled"`
+}
 
 // ProviderID needs to return an unique string to identify
 // this special MFA provider
@@ -26,7 +29,26 @@ func (m mfaTOTP) ProviderID() (id string) {
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the errProviderUnconfigured
-func (m mfaTOTP) Configure(yamlSource []byte) (err error) { return nil }
+func (m *mfaTOTP) Configure(yamlSource []byte) (err error) {
+	envelope := struct {
+		MFA struct {
+			TOTP *mfaTOTP `yaml:"totp"`
+		} `yaml:"mfa"`
+	}{}
+
+	if err := yaml.Unmarshal(yamlSource, &envelope); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	if envelope.MFA.TOTP == nil {
+		return errProviderUnconfigured
+	}
+	if !envelope.MFA.TOTP.Enabled {
+		return errProviderUnconfigured
+	}
+	return nil
+}
 
 // ValidateMFA takes the user from the login cookie and performs a
 // validation against the provided MFA configuration for this user
