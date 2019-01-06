@@ -1,3 +1,8 @@
+# 0.15.0 / 2019-01-06
+
+  * Add timestamp to audit log (#31)
+  * Fix several linter errors
+
 # 0.14.0 / 2018-12-29
 
   * [#25] Make TOTP provider fully configurable (#29)
