@@ -9,6 +9,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -49,6 +50,7 @@ func (a *auditLogger) Log(event auditEvent, r *http.Request, extraFields map[str
 
 	// Compile log event
 	evt := map[string]interface{}{}
+	evt["timestamp"] = time.Now().Format(time.RFC3339)
 	evt["event_type"] = event
 	evt["remote_addr"] = a.findIP(r)
 
