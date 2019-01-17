@@ -262,7 +262,7 @@ func (a authLDAP) dial() (*ldap.Conn, error) {
 		return nil, err
 	}
 
-	host := u.Host
+	host := u.Hostname()
 	port := u.Port()
 
 	var l *ldap.Conn
