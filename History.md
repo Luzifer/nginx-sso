@@ -1,3 +1,8 @@
+# 0.15.1 / 2019-01-17
+
+  * Fix: Host already had the port attached
+  * Fix audit logging when not using MFA (#32)
+
 # 0.15.0 / 2019-01-06
 
   * Add timestamp to audit log (#31)
