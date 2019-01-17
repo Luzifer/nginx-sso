@@ -185,11 +185,16 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		user, mfaCfgs, err := loginUser(res, r)
 		switch err {
 		case errNoValidUserFound:
+			auditFields["reason"] = "invalid credentials"
+			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
 		case nil:
 			// Don't handle for now, MFA validation comes first
 		default:
+			auditFields["reason"] = "error"
+			auditFields["error"] = err.Error()
+			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
 			log.WithError(err).Error("Login failed with unexpected error")
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
 			return
