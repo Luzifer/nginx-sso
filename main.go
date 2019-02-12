@@ -30,8 +30,9 @@ type mainConfig struct {
 		Secure  bool   `yaml:"secure"`
 	}
 	Listen struct {
-		Addr string `yaml:"addr"`
-		Port int    `yaml:"port"`
+		Addr string         `yaml:"addr"`
+		Port int            `yaml:"port"`
+		RootFallback string `yaml:"root_fallback"`
 	} `yaml:"listen"`
 	Login struct {
 		Title         string            `yaml:"title"`
@@ -118,6 +119,7 @@ func main() {
 
 	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
 
+	http.HandleFunc("/", handleRootRequest)
 	http.HandleFunc("/auth", handleAuthRequest)
 	http.HandleFunc("/login", handleLoginRequest)
 	http.HandleFunc("/logout", handleLogoutRequest)
@@ -141,6 +143,10 @@ func main() {
 			log.Fatalf("Received unexpected signal: %v", sig)
 		}
 	}
+}
+
+func handleRootRequest( res http.ResponseWriter, r *http.Request) {
+	http.Redirect(res, r,  mainCfg.Listen.RootFallback, http.StatusMovedPermanently)
 }
 
 func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
