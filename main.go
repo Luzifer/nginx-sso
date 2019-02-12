@@ -146,6 +146,10 @@ func main() {
 }
 
 func handleRootRequest( res http.ResponseWriter, r *http.Request) {
+	if len(mainCfg.Listen.RootFallback) == 0 {
+		http.Error(res, "404 page not found", http.StatusNotFound)
+		return
+	}
 	http.Redirect(res, r,  mainCfg.Listen.RootFallback, http.StatusMovedPermanently)
 }
 
