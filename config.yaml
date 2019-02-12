@@ -19,6 +19,7 @@ cookie:
 listen:
   addr: "127.0.0.1"
   port: 8082
+  root_fallback: "https://example.com"
 
 audit_log:
   targets:
