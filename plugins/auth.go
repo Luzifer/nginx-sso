@@ -10,12 +10,12 @@ type Authenticator interface {
 	// Configure loads the configuration for the Authenticator from the
 	// global config.yaml file which is passed as a byte-slice.
 	// If no configuration for the Authenticator is supplied the function
-	// needs to return the errProviderUnconfigured
+	// needs to return the ErrProviderUnconfigured
 	Configure(yamlSource []byte) (err error)
 
 	// DetectUser is used to detect a user without a login form from
 	// a cookie, header or other methods
-	// If no user was detected the errNoValidUserFound needs to be
+	// If no user was detected the ErrNoValidUserFound needs to be
 	// returned
 	DetectUser(res http.ResponseWriter, r *http.Request) (user string, groups []string, err error)
 
@@ -26,7 +26,7 @@ type Authenticator interface {
 	// With the login result an array of mfaConfig must be returned. In
 	// case there is no MFA config or the provider does not support MFA
 	// return nil.
-	// If the user did not login correctly the errNoValidUserFound
+	// If the user did not login correctly the ErrNoValidUserFound
 	// needs to be returned
 	Login(res http.ResponseWriter, r *http.Request) (user string, mfaConfigs []MFAConfig, err error)
 

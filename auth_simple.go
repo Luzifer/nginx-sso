@@ -29,7 +29,7 @@ func (a authSimple) AuthenticatorID() string { return "simple" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errProviderUnconfigured
+// needs to return the plugins.ErrProviderUnconfigured
 func (a *authSimple) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -42,7 +42,7 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Simple == nil {
-		return errProviderUnconfigured
+		return plugins.ErrProviderUnconfigured
 	}
 
 	a.EnableBasicAuth = envelope.Providers.Simple.EnableBasicAuth
@@ -55,7 +55,7 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 
 // DetectUser is used to detect a user without a login form from
 // a cookie, header or other methods
-// If no user was detected the errNoValidUserFound needs to be
+// If no user was detected the plugins.ErrNoValidUserFound needs to be
 // returned
 func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	var user string
@@ -78,13 +78,13 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 	if user == "" {
 		sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 		if err != nil {
-			return "", nil, errNoValidUserFound
+			return "", nil, plugins.ErrNoValidUserFound
 		}
 
 		var ok bool
 		user, ok = sess.Values["user"].(string)
 		if !ok {
-			return "", nil, errNoValidUserFound
+			return "", nil, plugins.ErrNoValidUserFound
 		}
 
 		// We had a cookie, lets renew it
@@ -108,7 +108,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 // to authenticate the user or throw an error. If the user has
 // successfully logged in the persistent cookie should be written
 // in order to use DetectUser for the next login.
-// If the user did not login correctly the errNoValidUserFound
+// If the user did not login correctly the plugins.ErrNoValidUserFound
 // needs to be returned
 func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
@@ -128,7 +128,7 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []p
 		return u, a.MFA[u], sess.Save(r, res)
 	}
 
-	return "", nil, errNoValidUserFound
+	return "", nil, plugins.ErrNoValidUserFound
 }
 
 // LoginFields needs to return the fields required for this login

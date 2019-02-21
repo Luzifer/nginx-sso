@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -12,9 +11,6 @@ import (
 )
 
 var (
-	errProviderUnconfigured = errors.New("No valid configuration found for this provider")
-	errNoValidUserFound     = errors.New("No valid users found")
-
 	authenticatorRegistry      = []plugins.Authenticator{}
 	authenticatorRegistryMutex sync.RWMutex
 
@@ -40,7 +36,7 @@ func initializeAuthenticators(yamlSource []byte) error {
 		case nil:
 			tmp = append(tmp, a)
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Activated authenticator")
-		case errProviderUnconfigured:
+		case plugins.ErrProviderUnconfigured:
 			log.WithFields(log.Fields{"authenticator": a.AuthenticatorID()}).Debug("Authenticator unconfigured")
 			// This is okay.
 		default:
@@ -66,14 +62,14 @@ func detectUser(res http.ResponseWriter, r *http.Request) (string, []string, err
 		switch err {
 		case nil:
 			return user, groups, err
-		case errNoValidUserFound:
+		case plugins.ErrNoValidUserFound:
 			// This is okay.
 		default:
 			return "", nil, err
 		}
 	}
 
-	return "", nil, errNoValidUserFound
+	return "", nil, plugins.ErrNoValidUserFound
 }
 
 func loginUser(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
@@ -85,14 +81,14 @@ func loginUser(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAC
 		switch err {
 		case nil:
 			return user, mfaCfgs, nil
-		case errNoValidUserFound:
+		case plugins.ErrNoValidUserFound:
 			// This is okay.
 		default:
 			return "", nil, err
 		}
 	}
 
-	return "", nil, errNoValidUserFound
+	return "", nil, plugins.ErrNoValidUserFound
 }
 
 func logoutUser(res http.ResponseWriter, r *http.Request) error {

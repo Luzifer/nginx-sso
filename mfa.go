@@ -44,7 +44,7 @@ func initializeMFAProviders(yamlSource []byte) error {
 		case nil:
 			activeMFAProviders = append(activeMFAProviders, m)
 			log.WithFields(log.Fields{"mfa_provider": m.ProviderID()}).Debug("Activated MFA provider")
-		case errProviderUnconfigured:
+		case plugins.ErrProviderUnconfigured:
 			log.WithFields(log.Fields{"mfa_provider": m.ProviderID()}).Debug("MFA provider unconfigured")
 			// This is okay.
 		default:
@@ -70,7 +70,7 @@ func validateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs 
 		case nil:
 			// Validated successfully
 			return nil
-		case errNoValidUserFound:
+		case plugins.ErrNoValidUserFound:
 			// This is fine for now
 		default:
 			return err
@@ -78,5 +78,5 @@ func validateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs 
 	}
 
 	// No method could verify the user
-	return errNoValidUserFound
+	return plugins.ErrNoValidUserFound
 }

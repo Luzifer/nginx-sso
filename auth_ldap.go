@@ -46,7 +46,7 @@ func (a authLDAP) AuthenticatorID() string { return "ldap" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errProviderUnconfigured
+// needs to return the plugins.ErrProviderUnconfigured
 func (a *authLDAP) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -59,7 +59,7 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.LDAP == nil {
-		return errProviderUnconfigured
+		return plugins.ErrProviderUnconfigured
 	}
 
 	a.EnableBasicAuth = envelope.Providers.LDAP.EnableBasicAuth
@@ -98,7 +98,7 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 
 // DetectUser is used to detect a user without a login form from
 // a cookie, header or other methods
-// If no user was detected the errNoValidUserFound needs to be
+// If no user was detected the plugins.ErrNoValidUserFound needs to be
 // returned
 func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	var alias, user string
@@ -118,17 +118,17 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 	if user == "" {
 		sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 		if err != nil {
-			return "", nil, errNoValidUserFound
+			return "", nil, plugins.ErrNoValidUserFound
 		}
 
 		var ok bool
 		if user, ok = sess.Values["user"].(string); !ok {
-			return "", nil, errNoValidUserFound
+			return "", nil, plugins.ErrNoValidUserFound
 		}
 
 		if alias, ok = sess.Values["alias"].(string); !ok {
 			// Most likely an old cookie, force re-login
-			return "", nil, errNoValidUserFound
+			return "", nil, plugins.ErrNoValidUserFound
 		}
 
 		// We had a cookie, lets renew it
@@ -147,7 +147,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 // to authenticate the user or throw an error. If the user has
 // successfully logged in the persistent cookie should be written
 // in order to use DetectUser for the next login.
-// If the user did not login correctly the errNoValidUserFound
+// If the user did not login correctly the plugins.ErrNoValidUserFound
 // needs to be returned
 func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
@@ -200,7 +200,7 @@ func (a authLDAP) Logout(res http.ResponseWriter, r *http.Request) (err error) {
 }
 
 // checkLogin searches for the username using the specified UserSearchFilter
-// and returns the UserDN and an error (errNoValidUserFound / processing error)
+// and returns the UserDN and an error (plugins.ErrNoValidUserFound / processing error)
 func (a authLDAP) checkLogin(username, password, aliasAttribute string) (string, string, error) {
 	l, err := a.dial()
 	if err != nil {
@@ -224,13 +224,13 @@ func (a authLDAP) checkLogin(username, password, aliasAttribute string) (string,
 	}
 
 	if len(sres.Entries) != 1 {
-		return "", "", errNoValidUserFound
+		return "", "", plugins.ErrNoValidUserFound
 	}
 
 	userDN := sres.Entries[0].DN
 
 	if err := l.Bind(userDN, password); err != nil {
-		return "", "", errNoValidUserFound
+		return "", "", plugins.ErrNoValidUserFound
 	}
 
 	alias := sres.Entries[0].GetAttributeValue(aliasAttribute)

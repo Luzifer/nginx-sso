@@ -27,7 +27,7 @@ func (m mfaTOTP) ProviderID() (id string) {
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errProviderUnconfigured
+// needs to return the plugins.ErrProviderUnconfigured
 func (m mfaTOTP) Configure(yamlSource []byte) (err error) { return nil }
 
 // ValidateMFA takes the user from the login cookie and performs a
@@ -53,7 +53,7 @@ func (m mfaTOTP) ValidateMFA(res http.ResponseWriter, r *http.Request, user stri
 	}
 
 	// Report this provider was not able to verify the MFA request
-	return errNoValidUserFound
+	return plugins.ErrNoValidUserFound
 }
 
 func (m mfaTOTP) exec(c plugins.MFAConfig) (string, error) {

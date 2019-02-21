@@ -30,7 +30,7 @@ func (a authCrowd) AuthenticatorID() string { return "crowd" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errProviderUnconfigured
+// needs to return the plugins.ErrProviderUnconfigured
 func (a *authCrowd) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -43,7 +43,7 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Crowd == nil {
-		return errProviderUnconfigured
+		return plugins.ErrProviderUnconfigured
 	}
 
 	a.URL = envelope.Providers.Crowd.URL
@@ -51,7 +51,7 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 	a.AppPassword = envelope.Providers.Crowd.AppPassword
 
 	if a.AppName == "" || a.AppPassword == "" {
-		return errProviderUnconfigured
+		return plugins.ErrProviderUnconfigured
 	}
 
 	var err error
@@ -62,7 +62,7 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 
 // DetectUser is used to detect a user without a login form from
 // a cookie, header or other methods
-// If no user was detected the errNoValidUserFound needs to be
+// If no user was detected the plugins.ErrNoValidUserFound needs to be
 // returned
 func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	cc, err := a.crowd.GetCookieConfig()
@@ -76,7 +76,7 @@ func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 		// Fine, we do have a cookie
 	case http.ErrNoCookie:
 		// Also fine, there is no cookie
-		return "", nil, errNoValidUserFound
+		return "", nil, plugins.ErrNoValidUserFound
 	default:
 		return "", nil, err
 	}
@@ -85,7 +85,7 @@ func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 	sess, err := a.crowd.GetSession(ssoToken)
 	if err != nil {
 		log.WithError(err).Debug("Getting crowd session failed")
-		return "", nil, errNoValidUserFound
+		return "", nil, plugins.ErrNoValidUserFound
 	}
 
 	user := sess.User.UserName
@@ -106,7 +106,7 @@ func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 // to authenticate the user or throw an error. If the user has
 // successfully logged in the persistent cookie should be written
 // in order to use DetectUser for the next login.
-// If the user did not login correctly the errNoValidUserFound
+// If the user did not login correctly the plugins.ErrNoValidUserFound
 // needs to be returned
 func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
@@ -122,7 +122,7 @@ func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) (string, []pl
 		log.WithFields(log.Fields{
 			"username": username,
 		}).WithError(err).Debug("Crowd authentication failed")
-		return "", nil, errNoValidUserFound
+		return "", nil, plugins.ErrNoValidUserFound
 	}
 
 	http.SetCookie(res, &http.Cookie{

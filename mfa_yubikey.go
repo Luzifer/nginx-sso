@@ -27,7 +27,7 @@ func (m mfaYubikey) ProviderID() (id string) { return "yubikey" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errProviderUnconfigured
+// needs to return the plugins.ErrProviderUnconfigured
 func (m *mfaYubikey) Configure(yamlSource []byte) (err error) {
 	envelope := struct {
 		MFA struct {
@@ -40,7 +40,7 @@ func (m *mfaYubikey) Configure(yamlSource []byte) (err error) {
 	}
 
 	if envelope.MFA.Yubikey == nil {
-		return errProviderUnconfigured
+		return plugins.ErrProviderUnconfigured
 	}
 
 	m.ClientID = envelope.MFA.Yubikey.ClientID
@@ -85,5 +85,5 @@ func (m mfaYubikey) ValidateMFA(res http.ResponseWriter, r *http.Request, user s
 	}
 
 	// Not a valid authentication
-	return errNoValidUserFound
+	return plugins.ErrNoValidUserFound
 }

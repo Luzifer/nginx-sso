@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/Luzifer/nginx-sso/plugins"
 	"github.com/Luzifer/rconfig"
 )
 
@@ -157,7 +158,7 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 	user, groups, err := detectUser(res, r)
 
 	switch err {
-	case errNoValidUserFound:
+	case plugins.ErrNoValidUserFound:
 		mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "no valid user found"}) // #nosec G104 - This is only logging
 		http.Error(res, "No valid user found", http.StatusUnauthorized)
 
@@ -194,7 +195,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		// Simple authentication
 		user, mfaCfgs, err := loginUser(res, r)
 		switch err {
-		case errNoValidUserFound:
+		case plugins.ErrNoValidUserFound:
 			auditFields["reason"] = "invalid credentials"
 			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
 			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
@@ -213,7 +214,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		// MFA validation against configs from login
 		err = validateMFA(res, r, user, mfaCfgs)
 		switch err {
-		case errNoValidUserFound:
+		case plugins.ErrNoValidUserFound:
 			auditFields["reason"] = "invalid credentials"
 			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
 			res.Header().Del("Set-Cookie")                               // Remove login cookie

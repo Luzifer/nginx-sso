@@ -10,7 +10,7 @@ type MFAProvider interface {
 	// Configure loads the configuration for the Authenticator from the
 	// global config.yaml file which is passed as a byte-slice.
 	// If no configuration for the Authenticator is supplied the function
-	// needs to return the errProviderUnconfigured
+	// needs to return the ErrProviderUnconfigured
 	Configure(yamlSource []byte) (err error)
 
 	// ValidateMFA takes the user from the login cookie and performs a

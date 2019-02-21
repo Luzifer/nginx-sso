@@ -29,7 +29,7 @@ func (a authYubikey) AuthenticatorID() string { return "yubikey" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errProviderUnconfigured
+// needs to return the plugins.ErrProviderUnconfigured
 func (a *authYubikey) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
@@ -42,7 +42,7 @@ func (a *authYubikey) Configure(yamlSource []byte) error {
 	}
 
 	if envelope.Providers.Yubikey == nil {
-		return errProviderUnconfigured
+		return plugins.ErrProviderUnconfigured
 	}
 
 	a.ClientID = envelope.Providers.Yubikey.ClientID
@@ -55,17 +55,17 @@ func (a *authYubikey) Configure(yamlSource []byte) error {
 
 // DetectUser is used to detect a user without a login form from
 // a cookie, header or other methods
-// If no user was detected the errNoValidUserFound needs to be
+// If no user was detected the plugins.ErrNoValidUserFound needs to be
 // returned
 func (a authYubikey) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
 	if err != nil {
-		return "", nil, errNoValidUserFound
+		return "", nil, plugins.ErrNoValidUserFound
 	}
 
 	user, ok := sess.Values["user"].(string)
 	if !ok {
-		return "", nil, errNoValidUserFound
+		return "", nil, plugins.ErrNoValidUserFound
 	}
 
 	// We had a cookie, lets renew it
@@ -88,7 +88,7 @@ func (a authYubikey) DetectUser(res http.ResponseWriter, r *http.Request) (strin
 // to authenticate the user or throw an error. If the user has
 // successfully logged in the persistent cookie should be written
 // in order to use DetectUser for the next login.
-// If the user did not login correctly the errNoValidUserFound
+// If the user did not login correctly the plugins.ErrNoValidUserFound
 // needs to be returned
 func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	keyInput := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "key-input"}, "-"))
@@ -105,13 +105,13 @@ func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) (string, []
 
 	if !ok {
 		// Not a valid authentication
-		return "", nil, errNoValidUserFound
+		return "", nil, plugins.ErrNoValidUserFound
 	}
 
 	user, ok := a.Devices[keyInput[:12]]
 	if !ok {
 		// We do not have a definition for that key
-		return "", nil, errNoValidUserFound
+		return "", nil, plugins.ErrNoValidUserFound
 	}
 
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned

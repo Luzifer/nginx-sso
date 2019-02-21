@@ -39,7 +39,7 @@ func (m mfaDuo) ProviderID() (id string) { return "duo" }
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
-// needs to return the errProviderUnconfigured
+// needs to return the plugins.ErrProviderUnconfigured
 func (m *mfaDuo) Configure(yamlSource []byte) (err error) {
 	envelope := struct {
 		MFA struct {
@@ -52,7 +52,7 @@ func (m *mfaDuo) Configure(yamlSource []byte) (err error) {
 	}
 
 	if envelope.MFA.Duo == nil {
-		return errProviderUnconfigured
+		return plugins.ErrProviderUnconfigured
 	}
 
 	m.IKey = envelope.MFA.Duo.IKey
@@ -105,7 +105,7 @@ func (m mfaDuo) ValidateMFA(res http.ResponseWriter, r *http.Request, user strin
 	}
 
 	// Report this provider was not able to verify the MFA request
-	return errNoValidUserFound
+	return plugins.ErrNoValidUserFound
 }
 
 func (m mfaDuo) findIP(r *http.Request) (string, error) {
