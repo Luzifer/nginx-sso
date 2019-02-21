@@ -3,6 +3,8 @@ FROM golang:alpine as builder
 ADD . /go/src/github.com/Luzifer/nginx-sso
 WORKDIR /go/src/github.com/Luzifer/nginx-sso
 
+ENV CGO_ENABLED=0
+
 RUN set -ex \
  && apk add --update git \
  && go install -ldflags "-X main.version=$(git describe --tags || git rev-parse --short HEAD || echo dev)"
