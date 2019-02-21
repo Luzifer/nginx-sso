@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Luzifer/go_helpers/str"
+	"github.com/Luzifer/nginx-sso/plugins"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -92,14 +93,14 @@ func (a authToken) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authToken) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
+func (a authToken) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	return "", nil, errNoValidUserFound
 }
 
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
 // needs to return nil.
-func (a authToken) LoginFields() []loginField { return nil }
+func (a authToken) LoginFields() []plugins.LoginField { return nil }
 
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies

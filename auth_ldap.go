@@ -9,6 +9,8 @@ import (
 
 	ldap "gopkg.in/ldap.v2"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/Luzifer/nginx-sso/plugins"
 )
 
 const (
@@ -147,7 +149,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
+func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -171,8 +173,8 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []mfa
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
 // needs to return nil.
-func (a authLDAP) LoginFields() (fields []loginField) {
-	return []loginField{
+func (a authLDAP) LoginFields() (fields []plugins.LoginField) {
+	return []plugins.LoginField{
 		{
 			Label:       "Username",
 			Name:        "username",

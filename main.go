@@ -13,6 +13,7 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 
@@ -39,6 +40,9 @@ type mainConfig struct {
 		HideMFAField  bool              `yaml:"hide_mfa_field"`
 		Names         map[string]string `yaml:"names"`
 	} `yaml:"login"`
+	Plugins struct {
+		Directory string `yaml:"directory"`
+	} `yaml:"plugins"`
 }
 
 func (m *mainConfig) GetSessionOpts() *sessions.Options {
@@ -98,6 +102,12 @@ func loadConfiguration() error {
 
 	if err = yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
 		return fmt.Errorf("Unable to load configuration file: %s", err)
+	}
+
+	if mainCfg.Plugins.Directory != "" {
+		if err = loadPlugins(mainCfg.Plugins.Directory); err != nil {
+			return errors.Wrap(err, "Unable to load plugins")
+		}
 	}
 
 	if err = initializeAuthenticators(yamlSource); err != nil {

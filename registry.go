@@ -7,71 +7,21 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Luzifer/nginx-sso/plugins"
 )
-
-type authenticator interface {
-	// AuthenticatorID needs to return an unique string to identify
-	// this special authenticator
-	AuthenticatorID() (id string)
-
-	// Configure loads the configuration for the Authenticator from the
-	// global config.yaml file which is passed as a byte-slice.
-	// If no configuration for the Authenticator is supplied the function
-	// needs to return the errProviderUnconfigured
-	Configure(yamlSource []byte) (err error)
-
-	// DetectUser is used to detect a user without a login form from
-	// a cookie, header or other methods
-	// If no user was detected the errNoValidUserFound needs to be
-	// returned
-	DetectUser(res http.ResponseWriter, r *http.Request) (user string, groups []string, err error)
-
-	// Login is called when the user submits the login form and needs
-	// to authenticate the user or throw an error. If the user has
-	// successfully logged in the persistent cookie should be written
-	// in order to use DetectUser for the next login.
-	// With the login result an array of mfaConfig must be returned. In
-	// case there is no MFA config or the provider does not support MFA
-	// return nil.
-	// If the user did not login correctly the errNoValidUserFound
-	// needs to be returned
-	Login(res http.ResponseWriter, r *http.Request) (user string, mfaConfigs []mfaConfig, err error)
-
-	// LoginFields needs to return the fields required for this login
-	// method. If no login using this method is possible the function
-	// needs to return nil.
-	LoginFields() (fields []loginField)
-
-	// Logout is called when the user visits the logout endpoint and
-	// needs to destroy any persistent stored cookies
-	Logout(res http.ResponseWriter, r *http.Request) (err error)
-
-	// SupportsMFA returns the MFA detection capabilities of the login
-	// provider. If the provider can provide mfaConfig objects from its
-	// configuration return true. If this is true the login interface
-	// will display an additional field for this provider for the user
-	// to fill in their MFA token.
-	SupportsMFA() bool
-}
-
-type loginField struct {
-	Label       string
-	Name        string
-	Placeholder string
-	Type        string
-}
 
 var (
 	errProviderUnconfigured = errors.New("No valid configuration found for this provider")
 	errNoValidUserFound     = errors.New("No valid users found")
 
-	authenticatorRegistry      = []authenticator{}
+	authenticatorRegistry      = []plugins.Authenticator{}
 	authenticatorRegistryMutex sync.RWMutex
 
-	activeAuthenticators = []authenticator{}
+	activeAuthenticators = []plugins.Authenticator{}
 )
 
-func registerAuthenticator(a authenticator) {
+func registerAuthenticator(a plugins.Authenticator) {
 	authenticatorRegistryMutex.Lock()
 	defer authenticatorRegistryMutex.Unlock()
 
@@ -82,7 +32,7 @@ func initializeAuthenticators(yamlSource []byte) error {
 	authenticatorRegistryMutex.Lock()
 	defer authenticatorRegistryMutex.Unlock()
 
-	tmp := []authenticator{}
+	tmp := []plugins.Authenticator{}
 	for _, a := range authenticatorRegistry {
 		err := a.Configure(yamlSource)
 
@@ -126,7 +76,7 @@ func detectUser(res http.ResponseWriter, r *http.Request) (string, []string, err
 	return "", nil, errNoValidUserFound
 }
 
-func loginUser(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
+func loginUser(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	authenticatorRegistryMutex.RLock()
 	defer authenticatorRegistryMutex.RUnlock()
 
@@ -158,11 +108,11 @@ func logoutUser(res http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func getFrontendAuthenticators() map[string][]loginField {
+func getFrontendAuthenticators() map[string][]plugins.LoginField {
 	authenticatorRegistryMutex.RLock()
 	defer authenticatorRegistryMutex.RUnlock()
 
-	output := map[string][]loginField{}
+	output := map[string][]plugins.LoginField{}
 	for _, a := range activeAuthenticators {
 		if len(a.LoginFields()) == 0 {
 			continue
