@@ -50,6 +50,9 @@ mfa:
     host: "HOST"
     user_agent: "nginx-sso"
 
+plugins:
+  directory: ./plugins/
+
 providers:
   # Authentication against an Atlassian Crowd directory server
   # Supports: Users, Groups
