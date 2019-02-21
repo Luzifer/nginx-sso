@@ -8,6 +8,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Luzifer/go_helpers/str"
+	"github.com/Luzifer/nginx-sso/plugins"
 )
 
 func init() {
@@ -15,10 +16,10 @@ func init() {
 }
 
 type authSimple struct {
-	EnableBasicAuth bool                   `yaml:"enable_basic_auth"`
-	Users           map[string]string      `yaml:"users"`
-	Groups          map[string][]string    `yaml:"groups"`
-	MFA             map[string][]mfaConfig `yaml:"mfa"`
+	EnableBasicAuth bool                           `yaml:"enable_basic_auth"`
+	Users           map[string]string              `yaml:"users"`
+	Groups          map[string][]string            `yaml:"groups"`
+	MFA             map[string][]plugins.MFAConfig `yaml:"mfa"`
 }
 
 // AuthenticatorID needs to return an unique string to identify
@@ -109,7 +110,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
+func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -133,8 +134,8 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []m
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
 // needs to return nil.
-func (a authSimple) LoginFields() (fields []loginField) {
-	return []loginField{
+func (a authSimple) LoginFields() (fields []plugins.LoginField) {
+	return []plugins.LoginField{
 		{
 			Label:       "Username",
 			Name:        "username",

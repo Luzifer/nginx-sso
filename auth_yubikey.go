@@ -8,6 +8,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Luzifer/go_helpers/str"
+	"github.com/Luzifer/nginx-sso/plugins"
 )
 
 func init() {
@@ -89,7 +90,7 @@ func (a authYubikey) DetectUser(res http.ResponseWriter, r *http.Request) (strin
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the errNoValidUserFound
 // needs to be returned
-func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) (string, []mfaConfig, error) {
+func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	keyInput := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "key-input"}, "-"))
 
 	yubiAuth, err := yubigo.NewYubiAuth(a.ClientID, a.SecretKey)
@@ -122,8 +123,8 @@ func (a authYubikey) Login(res http.ResponseWriter, r *http.Request) (string, []
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
 // needs to return nil.
-func (a authYubikey) LoginFields() (fields []loginField) {
-	return []loginField{
+func (a authYubikey) LoginFields() (fields []plugins.LoginField) {
+	return []plugins.LoginField{
 		{
 			Label:       "Yubikey One-Time-Password",
 			Name:        "key-input",

@@ -7,6 +7,8 @@ import (
 	"github.com/GeertJohan/yubigo"
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/Luzifer/nginx-sso/plugins"
 )
 
 func init() {
@@ -49,7 +51,7 @@ func (m *mfaYubikey) Configure(yamlSource []byte) (err error) {
 
 // ValidateMFA takes the user from the login cookie and performs a
 // validation against the provided MFA configuration for this user
-func (m mfaYubikey) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []mfaConfig) error {
+func (m mfaYubikey) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
 	var keyInput string
 
 	yubiAuth, err := yubigo.NewYubiAuth(m.ClientID, m.SecretKey)

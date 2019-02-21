@@ -8,6 +8,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
+
+	"github.com/Luzifer/nginx-sso/plugins"
 )
 
 func init() {
@@ -30,7 +32,7 @@ func (m mfaTOTP) Configure(yamlSource []byte) (err error) { return nil }
 
 // ValidateMFA takes the user from the login cookie and performs a
 // validation against the provided MFA configuration for this user
-func (m mfaTOTP) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []mfaConfig) error {
+func (m mfaTOTP) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
 	// Look for mfaConfigs with own provider name
 	for _, c := range mfaCfgs {
 		// Provider has been renamed, keep "google" for backwards compatibility
@@ -54,7 +56,7 @@ func (m mfaTOTP) ValidateMFA(res http.ResponseWriter, r *http.Request, user stri
 	return errNoValidUserFound
 }
 
-func (m mfaTOTP) exec(c mfaConfig) (string, error) {
+func (m mfaTOTP) exec(c plugins.MFAConfig) (string, error) {
 	secret := c.AttributeString("secret")
 
 	// By default use Google Authenticator compatible settings

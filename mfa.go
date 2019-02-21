@@ -6,66 +6,27 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Luzifer/nginx-sso/plugins"
 )
 
 const mfaLoginFieldName = "mfa-token"
 
-var mfaLoginField = loginField{
+var mfaLoginField = plugins.LoginField{
 	Label:       "MFA Token",
 	Name:        mfaLoginFieldName,
 	Placeholder: "(optional)",
 	Type:        "text",
 }
 
-type mfaConfig struct {
-	Provider   string                 `yaml:"provider"`
-	Attributes map[string]interface{} `yaml:"attributes"`
-}
-
-func (m mfaConfig) AttributeInt(key string) int {
-	if v, ok := m.Attributes[key]; ok && v != "" {
-		if sv, ok := v.(int); ok {
-			return sv
-		}
-	}
-
-	return 0
-}
-
-func (m mfaConfig) AttributeString(key string) string {
-	if v, ok := m.Attributes[key]; ok {
-		if sv, ok := v.(string); ok {
-			return sv
-		}
-	}
-
-	return ""
-}
-
-type mfaProvider interface {
-	// ProviderID needs to return an unique string to identify
-	// this special MFA provider
-	ProviderID() (id string)
-
-	// Configure loads the configuration for the Authenticator from the
-	// global config.yaml file which is passed as a byte-slice.
-	// If no configuration for the Authenticator is supplied the function
-	// needs to return the errProviderUnconfigured
-	Configure(yamlSource []byte) (err error)
-
-	// ValidateMFA takes the user from the login cookie and performs a
-	// validation against the provided MFA configuration for this user
-	ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []mfaConfig) error
-}
-
 var (
-	mfaRegistry      = []mfaProvider{}
+	mfaRegistry      = []plugins.MFAProvider{}
 	mfaRegistryMutex sync.RWMutex
 
-	activeMFAProviders = []mfaProvider{}
+	activeMFAProviders = []plugins.MFAProvider{}
 )
 
-func registerMFAProvider(m mfaProvider) {
+func registerMFAProvider(m plugins.MFAProvider) {
 	mfaRegistryMutex.Lock()
 	defer mfaRegistryMutex.Unlock()
 
@@ -94,7 +55,7 @@ func initializeMFAProviders(yamlSource []byte) error {
 	return nil
 }
 
-func validateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []mfaConfig) error {
+func validateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
 	if len(mfaCfgs) == 0 {
 		// User has no configured MFA devices, their MFA is automatically valid
 		return nil
