@@ -1,3 +1,8 @@
+# 0.16.0 / 2019-02-23
+
+  * Enable CGO for plugin support
+  * Add plugin support (#38)
+
 # 0.15.1 / 2019-01-17
 
   * Fix: Host already had the port attached
