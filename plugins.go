@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"plugin"
 	"strings"
@@ -28,24 +29,28 @@ func loadPlugins(pluginDir string) error {
 		return errors.New("Plugin directory is not a directory")
 	}
 
-	return errors.Wrap(filepath.Walk(pluginDir, func(path string, info os.FileInfo, err error) error {
+	return errors.Wrap(filepath.Walk(pluginDir, func(currentPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if !strings.HasSuffix(path, ".so") {
+		if !strings.HasSuffix(currentPath, ".so") {
 			// Ignore that file, is not a plugin
 			return nil
 		}
 
-		p, err := plugin.Open(path)
+		logger := log.WithField("plugin", path.Base(currentPath))
+
+		p, err := plugin.Open(currentPath)
 		if err != nil {
-			return errors.Wrapf(err, "Unable to load plugin %q", path)
+			logger.WithError(err).Error("Unable to open plugin")
+			return nil
 		}
 
 		f, err := p.Lookup("Register")
 		if err != nil {
-			return errors.Wrapf(err, "Unable to find register function in %q", path)
+			logger.WithError(err).Error("Unable to find register function")
+			return nil
 		}
 
 		f.(func(plugins.RegisterAuthenticatorFunc, plugins.RegisterMFAProviderFunc))(
