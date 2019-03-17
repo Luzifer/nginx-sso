@@ -1,3 +1,7 @@
+# 0.16.1 / 2019-03-17
+
+  * Fix: Do not crash main program on incompatible plugins
+
 # 0.16.0 / 2019-02-23
 
   * Enable CGO for plugin support
