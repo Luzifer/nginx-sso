@@ -1,3 +1,7 @@
+# 0.16.2 / 2019-04-16
+
+  * Replace CDNJS as of permanent CORS failures
+
 # 0.16.1 / 2019-03-17
 
   * Fix: Do not crash main program on incompatible plugins
