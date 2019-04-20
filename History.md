@@ -1,3 +1,7 @@
+# 0.17.0 / 2019-04-21
+
+  * Work around missing URL parameters (#39)
+
 # 0.16.2 / 2019-04-16
 
   * Replace CDNJS as of permanent CORS failures
