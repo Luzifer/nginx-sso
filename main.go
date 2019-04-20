@@ -181,14 +181,19 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 }
 
 func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
+	redirURL, err := getRedirectURL(r)
+	if err != nil {
+		http.Error(res, "Invalid redirect URL specified", http.StatusBadRequest)
+	}
+
 	if _, _, err := detectUser(res, r); err == nil {
 		// There is already a valid user
-		http.Redirect(res, r, r.URL.Query().Get("go"), http.StatusFound)
+		http.Redirect(res, r, redirURL, http.StatusFound)
 		return
 	}
 
 	auditFields := map[string]string{
-		"go": r.FormValue("go"),
+		"go": redirURL,
 	}
 
 	if r.Method == "POST" {
@@ -198,7 +203,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		case plugins.ErrNoValidUserFound:
 			auditFields["reason"] = "invalid credentials"
 			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
-			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
+			http.Redirect(res, r, "/login?go="+url.QueryEscape(redirURL), http.StatusFound)
 			return
 		case nil:
 			// Don't handle for now, MFA validation comes first
@@ -207,7 +212,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 			auditFields["error"] = err.Error()
 			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
 			log.WithError(err).Error("Login failed with unexpected error")
-			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
+			http.Redirect(res, r, "/login?go="+url.QueryEscape(redirURL), http.StatusFound)
 			return
 		}
 
@@ -218,12 +223,12 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 			auditFields["reason"] = "invalid credentials"
 			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
 			res.Header().Del("Set-Cookie")                               // Remove login cookie
-			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
+			http.Redirect(res, r, "/login?go="+url.QueryEscape(redirURL), http.StatusFound)
 			return
 
 		case nil:
 			mainCfg.AuditLog.Log(auditEventLoginSuccess, r, auditFields) // #nosec G104 - This is only logging
-			http.Redirect(res, r, r.FormValue("go"), http.StatusFound)
+			http.Redirect(res, r, redirURL, http.StatusFound)
 			return
 
 		default:
@@ -232,7 +237,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 			mainCfg.AuditLog.Log(auditEventLoginFailure, r, auditFields) // #nosec G104 - This is only logging
 			log.WithError(err).Error("Login failed with unexpected error")
 			res.Header().Del("Set-Cookie") // Remove login cookie
-			http.Redirect(res, r, "/login?go="+url.QueryEscape(r.FormValue("go")), http.StatusFound)
+			http.Redirect(res, r, "/login?go="+url.QueryEscape(redirURL), http.StatusFound)
 			return
 		}
 	}
@@ -240,7 +245,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 	tpl := pongo2.Must(pongo2.FromFile(path.Join(cfg.TemplateDir, "index.html")))
 	if err := tpl.ExecuteWriter(pongo2.Context{
 		"active_methods": getFrontendAuthenticators(),
-		"go":             r.URL.Query().Get("go"),
+		"go":             redirURL,
 		"login":          mainCfg.Login,
 	}, res); err != nil {
 		log.WithError(err).Error("Unable to render template")
@@ -249,6 +254,11 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 }
 
 func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {
+	redirURL, err := getRedirectURL(r)
+	if err != nil {
+		http.Error(res, "Invalid redirect URL specified", http.StatusBadRequest)
+	}
+
 	mainCfg.AuditLog.Log(auditEventLogout, r, nil) // #nosec G104 - This is only logging
 	if err := logoutUser(res, r); err != nil {
 		log.WithError(err).Error("Failed to logout user")
@@ -256,5 +266,5 @@ func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(res, r, r.URL.Query().Get("go"), http.StatusFound)
+	http.Redirect(res, r, redirURL, http.StatusFound)
 }
