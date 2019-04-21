@@ -132,7 +132,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 		}
 
 		// We had a cookie, lets renew it
-		sess.Options = mainCfg.GetSessionOpts()
+		sess.Options = mainCfg.Cookie.GetSessionOpts()
 		if err := sess.Save(r, res); err != nil {
 			return "", nil, err
 		}
@@ -164,7 +164,7 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []plu
 	}
 
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
-	sess.Options = mainCfg.GetSessionOpts()
+	sess.Options = mainCfg.Cookie.GetSessionOpts()
 	sess.Values["user"] = userDN
 	sess.Values["alias"] = alias
 	return userDN, nil, sess.Save(r, res)
@@ -194,7 +194,7 @@ func (a authLDAP) LoginFields() (fields []plugins.LoginField) {
 // needs to destroy any persistent stored cookies
 func (a authLDAP) Logout(res http.ResponseWriter, r *http.Request) (err error) {
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
-	sess.Options = mainCfg.GetSessionOpts()
+	sess.Options = mainCfg.Cookie.GetSessionOpts()
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
 }

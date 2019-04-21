@@ -22,16 +22,10 @@ import (
 )
 
 type mainConfig struct {
-	ACL      acl         `yaml:"acl"`
-	AuditLog auditLogger `yaml:"audit_log"`
-	Cookie   struct {
-		Domain  string `yaml:"domain"`
-		AuthKey string `yaml:"authentication_key"`
-		Expire  int    `yaml:"expire"`
-		Prefix  string `yaml:"prefix"`
-		Secure  bool   `yaml:"secure"`
-	}
-	Listen struct {
+	ACL      acl                  `yaml:"acl"`
+	AuditLog auditLogger          `yaml:"audit_log"`
+	Cookie   plugins.CookieConfig `yaml:"cookie"`
+	Listen   struct {
 		Addr string `yaml:"addr"`
 		Port int    `yaml:"port"`
 	} `yaml:"listen"`
@@ -45,16 +39,6 @@ type mainConfig struct {
 	Plugins struct {
 		Directory string `yaml:"directory"`
 	} `yaml:"plugins"`
-}
-
-func (m *mainConfig) GetSessionOpts() *sessions.Options {
-	return &sessions.Options{
-		Path:     "/",
-		Domain:   m.Cookie.Domain,
-		MaxAge:   m.Cookie.Expire,
-		Secure:   m.Cookie.Secure,
-		HttpOnly: true,
-	}
 }
 
 var (

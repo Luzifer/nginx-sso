@@ -88,7 +88,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 		}
 
 		// We had a cookie, lets renew it
-		sess.Options = mainCfg.GetSessionOpts()
+		sess.Options = mainCfg.Cookie.GetSessionOpts()
 		if err := sess.Save(r, res); err != nil {
 			return "", nil, err
 		}
@@ -123,7 +123,7 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []p
 		}
 
 		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
-		sess.Options = mainCfg.GetSessionOpts()
+		sess.Options = mainCfg.Cookie.GetSessionOpts()
 		sess.Values["user"] = u
 		return u, a.MFA[u], sess.Save(r, res)
 	}
@@ -155,7 +155,7 @@ func (a authSimple) LoginFields() (fields []plugins.LoginField) {
 // needs to destroy any persistent stored cookies
 func (a authSimple) Logout(res http.ResponseWriter, r *http.Request) (err error) {
 	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
-	sess.Options = mainCfg.GetSessionOpts()
+	sess.Options = mainCfg.Cookie.GetSessionOpts()
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
 }
