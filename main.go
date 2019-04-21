@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strings"
 	"syscall"
 
 	"github.com/flosch/pongo2"
@@ -76,6 +77,7 @@ func init() {
 	mainCfg.Cookie.Expire = 3600
 	mainCfg.Listen.Addr = "127.0.0.1"
 	mainCfg.Listen.Port = 8082
+	mainCfg.Login.DefaultRedirect = "debug"
 	mainCfg.AuditLog.TrustedIPHeaders = []string{"X-Forwarded-For", "RemoteAddr", "X-Real-IP"}
 	mainCfg.AuditLog.Headers = []string{"x-origin-uri"}
 }
@@ -117,6 +119,7 @@ func main() {
 
 	http.HandleFunc("/", handleRootRequest)
 	http.HandleFunc("/auth", handleAuthRequest)
+	http.HandleFunc("/debug", handleLoginDebug)
 	http.HandleFunc("/login", handleLoginRequest)
 	http.HandleFunc("/logout", handleLogoutRequest)
 
@@ -270,4 +273,25 @@ func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(res, r, redirURL, http.StatusFound)
+}
+
+func handleLoginDebug(w http.ResponseWriter, r *http.Request) {
+	user, groups, err := detectUser(w, r)
+	switch err {
+	case nil:
+		// All fine
+
+	case plugins.ErrNoValidUserFound:
+		http.Redirect(w, r, "login", http.StatusFound)
+		return
+
+	default:
+		log.WithError(err).Error("Failed to get user for login debug")
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, "Successfully logged in:")
+	fmt.Fprintf(w, "- Username: %s\n", user)
+	fmt.Fprintf(w, "- Groups: %s\n", strings.Join(groups, ","))
 }
