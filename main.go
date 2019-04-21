@@ -130,6 +130,7 @@ func main() {
 
 	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
 
+	http.HandleFunc("/", handleRootRequest)
 	http.HandleFunc("/auth", handleAuthRequest)
 	http.HandleFunc("/login", handleLoginRequest)
 	http.HandleFunc("/logout", handleLogoutRequest)
@@ -153,6 +154,11 @@ func main() {
 			log.Fatalf("Received unexpected signal: %v", sig)
 		}
 	}
+}
+
+func handleRootRequest(res http.ResponseWriter, r *http.Request) {
+	// In case of a request to `/` redirect to login utilizing the default redirect
+	http.Redirect(res, r, "login", http.StatusFound)
 }
 
 func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
