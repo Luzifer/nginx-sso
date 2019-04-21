@@ -135,6 +135,12 @@ type GetUsersResult struct {
 	Response []User
 }
 
+// GetUserResult models responses containing a single user.
+type GetUserResult struct {
+	duoapi.StatResult
+	Response User
+}
+
 func (result *GetUsersResult) getResponse() interface{} {
 	return result.Response
 }
@@ -188,7 +194,7 @@ func (c *Client) retrieveItems(
 		}
 
 		params.Set("offset", accumulator.metadata().NextOffset.String())
-		for ; params.Get("offset") != "" ; {
+		for params.Get("offset") != "" {
 			nextResult, err := fetcher(params)
 			if err != nil {
 				return nil, err
@@ -219,7 +225,7 @@ func (c *Client) retrieveUsers(params url.Values) (*GetUsersResult, error) {
 
 // GetUser calls GET /admin/v1/users/:user_id
 // See https://duo.com/docs/adminapi#retrieve-user-by-id
-func (c *Client) GetUser(userID string) (*GetUsersResult, error) {
+func (c *Client) GetUser(userID string) (*GetUserResult, error) {
 	path := fmt.Sprintf("/admin/v1/users/%s", userID)
 
 	_, body, err := c.SignedCall(http.MethodGet, path, nil, duoapi.UseTimeout)
@@ -227,7 +233,7 @@ func (c *Client) GetUser(userID string) (*GetUsersResult, error) {
 		return nil, err
 	}
 
-	result := &GetUsersResult{}
+	result := &GetUserResult{}
 	err = json.Unmarshal(body, result)
 	if err != nil {
 		return nil, err
@@ -509,7 +515,6 @@ func (result *GetPhonesResult) appendResponse(phones interface{}) {
 	result.Response = append(result.Response, asserted_phones...)
 }
 
-
 // GetPhones calls GET /admin/v1/phones
 // See https://duo.com/docs/adminapi#phones
 func (c *Client) GetPhones(options ...func(*url.Values)) (*GetPhonesResult, error) {
@@ -593,7 +598,6 @@ func (result *GetTokensResult) appendResponse(tokens interface{}) {
 	result.Response = append(result.Response, asserted_tokens...)
 }
 
-
 // GetTokens calls GET /admin/v1/tokens
 // See https://duo.com/docs/adminapi#retrieve-hardware-tokens
 func (c *Client) GetTokens(options ...func(*url.Values)) (*GetTokensResult, error) {
@@ -668,7 +672,6 @@ func (result *GetU2FTokensResult) appendResponse(tokens interface{}) {
 	asserted_tokens := tokens.([]U2FToken)
 	result.Response = append(result.Response, asserted_tokens...)
 }
-
 
 // GetU2FTokens calls GET /admin/v1/u2ftokens
 // See https://duo.com/docs/adminapi#retrieve-u2f-tokens

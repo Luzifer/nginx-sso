@@ -27,7 +27,7 @@ func (c *Crowd) GetUser(user string) (User, error) {
 	v := url.Values{}
 	v.Set("username", user)
 	url := c.url + "rest/usermanagement/1/user?" + v.Encode()
-	client := http.Client{Jar: c.cookies}
+	c.Client.Jar = c.cookies
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return u, err
@@ -35,7 +35,7 @@ func (c *Crowd) GetUser(user string) (User, error) {
 	req.SetBasicAuth(c.user, c.passwd)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/xml")
-	resp, err := client.Do(req)
+	resp, err := c.Client.Do(req)
 	if err != nil {
 		return u, err
 	}
@@ -47,7 +47,7 @@ func (c *Crowd) GetUser(user string) (User, error) {
 	case 200:
 		// fall through switch without returning
 	default:
-		return u, fmt.Errorf("request failed: %s\n", resp.Status)
+		return u, fmt.Errorf("request failed: %s", resp.Status)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)

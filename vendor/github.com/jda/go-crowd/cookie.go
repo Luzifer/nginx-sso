@@ -19,7 +19,7 @@ type CookieConfig struct {
 func (c *Crowd) GetCookieConfig() (CookieConfig, error) {
 	cc := CookieConfig{}
 
-	client := http.Client{Jar: c.cookies}
+	c.Client.Jar = c.cookies
 	req, err := http.NewRequest("GET", c.url+"rest/usermanagement/1/config/cookie", nil)
 	if err != nil {
 		return cc, err
@@ -27,13 +27,13 @@ func (c *Crowd) GetCookieConfig() (CookieConfig, error) {
 	req.SetBasicAuth(c.user, c.passwd)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/xml")
-	resp, err := client.Do(req)
+	resp, err := c.Client.Do(req)
 	if err != nil {
 		return cc, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return cc, fmt.Errorf("request failed: %s\n", resp.Status)
+		return cc, fmt.Errorf("request failed: %s", resp.Status)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)

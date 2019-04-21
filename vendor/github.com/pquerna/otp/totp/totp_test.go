@@ -40,24 +40,24 @@ var (
 	secSha512 = base32.StdEncoding.EncodeToString([]byte("1234567890123456789012345678901234567890123456789012345678901234"))
 
 	rfcMatrixTCs = []tc{
-		tc{59, "94287082", otp.AlgorithmSHA1, secSha1},
-		tc{59, "46119246", otp.AlgorithmSHA256, secSha256},
-		tc{59, "90693936", otp.AlgorithmSHA512, secSha512},
-		tc{1111111109, "07081804", otp.AlgorithmSHA1, secSha1},
-		tc{1111111109, "68084774", otp.AlgorithmSHA256, secSha256},
-		tc{1111111109, "25091201", otp.AlgorithmSHA512, secSha512},
-		tc{1111111111, "14050471", otp.AlgorithmSHA1, secSha1},
-		tc{1111111111, "67062674", otp.AlgorithmSHA256, secSha256},
-		tc{1111111111, "99943326", otp.AlgorithmSHA512, secSha512},
-		tc{1234567890, "89005924", otp.AlgorithmSHA1, secSha1},
-		tc{1234567890, "91819424", otp.AlgorithmSHA256, secSha256},
-		tc{1234567890, "93441116", otp.AlgorithmSHA512, secSha512},
-		tc{2000000000, "69279037", otp.AlgorithmSHA1, secSha1},
-		tc{2000000000, "90698825", otp.AlgorithmSHA256, secSha256},
-		tc{2000000000, "38618901", otp.AlgorithmSHA512, secSha512},
-		tc{20000000000, "65353130", otp.AlgorithmSHA1, secSha1},
-		tc{20000000000, "77737706", otp.AlgorithmSHA256, secSha256},
-		tc{20000000000, "47863826", otp.AlgorithmSHA512, secSha512},
+		{59, "94287082", otp.AlgorithmSHA1, secSha1},
+		{59, "46119246", otp.AlgorithmSHA256, secSha256},
+		{59, "90693936", otp.AlgorithmSHA512, secSha512},
+		{1111111109, "07081804", otp.AlgorithmSHA1, secSha1},
+		{1111111109, "68084774", otp.AlgorithmSHA256, secSha256},
+		{1111111109, "25091201", otp.AlgorithmSHA512, secSha512},
+		{1111111111, "14050471", otp.AlgorithmSHA1, secSha1},
+		{1111111111, "67062674", otp.AlgorithmSHA256, secSha256},
+		{1111111111, "99943326", otp.AlgorithmSHA512, secSha512},
+		{1234567890, "89005924", otp.AlgorithmSHA1, secSha1},
+		{1234567890, "91819424", otp.AlgorithmSHA256, secSha256},
+		{1234567890, "93441116", otp.AlgorithmSHA512, secSha512},
+		{2000000000, "69279037", otp.AlgorithmSHA1, secSha1},
+		{2000000000, "90698825", otp.AlgorithmSHA256, secSha256},
+		{2000000000, "38618901", otp.AlgorithmSHA512, secSha512},
+		{20000000000, "65353130", otp.AlgorithmSHA1, secSha1},
+		{20000000000, "77737706", otp.AlgorithmSHA256, secSha256},
+		{20000000000, "47863826", otp.AlgorithmSHA512, secSha512},
 	}
 )
 
@@ -99,9 +99,9 @@ func TestValidateSkew(t *testing.T) {
 	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
 
 	tests := []tc{
-		tc{29, "94287082", otp.AlgorithmSHA1, secSha1},
-		tc{59, "94287082", otp.AlgorithmSHA1, secSha1},
-		tc{61, "94287082", otp.AlgorithmSHA1, secSha1},
+		{29, "94287082", otp.AlgorithmSHA1, secSha1},
+		{59, "94287082", otp.AlgorithmSHA1, secSha1},
+		{61, "94287082", otp.AlgorithmSHA1, secSha1},
 	}
 
 	for _, tx := range tests {
@@ -126,7 +126,7 @@ func TestGenerate(t *testing.T) {
 	require.NoError(t, err, "generate basic TOTP")
 	require.Equal(t, "SnakeOil", k.Issuer(), "Extracting Issuer")
 	require.Equal(t, "alice@example.com", k.AccountName(), "Extracting Account Name")
-	require.Equal(t, 16, len(k.Secret()), "Secret is 16 bytes long as base32.")
+	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
 
 	k, err = Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
@@ -143,4 +143,18 @@ func TestGenerate(t *testing.T) {
 	})
 	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
 	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
+}
+
+func TestGoogleLowerCaseSecret(t *testing.T) {
+	w, err := otp.NewKeyFromURL(`otpauth://totp/Google%3Afoo%40example.com?secret=qlt6vmy6svfx4bt4rpmisaiyol6hihca&issuer=Google`)
+	require.NoError(t, err)
+	sec := w.Secret()
+	require.Equal(t, "qlt6vmy6svfx4bt4rpmisaiyol6hihca", sec)
+
+	n := time.Now().UTC()
+	code, err := GenerateCode(w.Secret(), n)
+	require.NoError(t, err)
+
+	valid := Validate(code, w.Secret())
+	require.True(t, valid)
 }

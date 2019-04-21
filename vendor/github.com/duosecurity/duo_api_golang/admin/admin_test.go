@@ -84,6 +84,53 @@ const getUsersResponse = `{
 	}]
 }`
 
+const getUserResponse = `{
+	"stat": "OK",
+	"response": {
+		"alias1": "joe.smith",
+		"alias2": "jsmith@example.com",
+		"alias3": null,
+		"alias4": null,
+		"created": 1489612729,
+		"email": "jsmith@example.com",
+		"firstname": "Joe",
+		"groups": [{
+			"desc": "People with hardware tokens",
+			"name": "token_users"
+		}],
+		"last_directory_sync": 1508789163,
+		"last_login": 1343921403,
+		"lastname": "Smith",
+		"notes": "",
+		"phones": [{
+			"phone_id": "DPFZRS9FB0D46QFTM899",
+			"number": "+15555550100",
+			"extension": "",
+			"name": "",
+			"postdelay": null,
+			"predelay": null,
+			"type": "Mobile",
+			"capabilities": [
+				"sms",
+				"phone",
+				"push"
+			],
+			"platform": "Apple iOS",
+			"activated": false,
+			"sms_passcodes_sent": false
+		}],
+		"realname": "Joe Smith",
+		"status": "active",
+		"tokens": [{
+			"serial": "0",
+			"token_id": "DHIZ34ALBA2445ND4AI2",
+			"type": "d1"
+		}],
+		"user_id": "DU3RP9I2WOC59VZX672N",
+		"username": "jsmith"
+	}
+}`
+
 func TestGetUsers(t *testing.T) {
 	var last_request *http.Request
 	ts := httptest.NewTLSServer(
@@ -281,7 +328,7 @@ func TestGetUserPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetUsers(func(values *url.Values){
+	_, err := duo.GetUsers(func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return
@@ -307,7 +354,7 @@ func TestGetUserPageArgs(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	ts := httptest.NewTLSServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, getUsersResponse)
+			fmt.Fprintln(w, getUserResponse)
 		}),
 	)
 	defer ts.Close()
@@ -321,11 +368,8 @@ func TestGetUser(t *testing.T) {
 	if result.Stat != "OK" {
 		t.Errorf("Expected OK, but got %s", result.Stat)
 	}
-	if len(result.Response) != 1 {
-		t.Errorf("Expected 1 user, but got %d", len(result.Response))
-	}
-	if result.Response[0].UserID != "DU3RP9I2WOC59VZX672N" {
-		t.Errorf("Expected user ID DU3RP9I2WOC59VZX672N, but got %s", result.Response[0].UserID)
+	if result.Response.UserID != "DU3RP9I2WOC59VZX672N" {
+		t.Errorf("Expected user ID DU3RP9I2WOC59VZX672N, but got %s", result.Response.UserID)
 	}
 }
 
@@ -495,7 +539,7 @@ func TestGetUserGroupsPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetUserGroups("DU3RP9I2WOC59VZX672N", func(values *url.Values){
+	_, err := duo.GetUserGroups("DU3RP9I2WOC59VZX672N", func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return
@@ -720,7 +764,7 @@ func TestGetUserPhonesPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetUserPhones("DU3RP9I2WOC59VZX672N", func(values *url.Values){
+	_, err := duo.GetUserPhones("DU3RP9I2WOC59VZX672N", func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return
@@ -882,7 +926,7 @@ func TestGetUserTokensPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetUserTokens("DU3RP9I2WOC59VZX672N", func(values *url.Values){
+	_, err := duo.GetUserTokens("DU3RP9I2WOC59VZX672N", func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return
@@ -1050,7 +1094,7 @@ func TestGetUserU2FTokensPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetUserU2FTokens("DU3RP9I2WOC59VZX672N", func(values *url.Values){
+	_, err := duo.GetUserU2FTokens("DU3RP9I2WOC59VZX672N", func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return
@@ -1152,7 +1196,7 @@ func TestGetGroupsPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetGroups(func(values *url.Values){
+	_, err := duo.GetGroups(func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return
@@ -1431,7 +1475,7 @@ func TestGetPhonesPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetPhones(func(values *url.Values){
+	_, err := duo.GetPhones(func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return
@@ -1665,7 +1709,7 @@ func TestGetTokensPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetTokens(func(values *url.Values){
+	_, err := duo.GetTokens(func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return
@@ -1900,7 +1944,7 @@ func TestGetU2FTokensPageArgs(t *testing.T) {
 
 	duo := buildAdminClient(ts.URL, nil)
 
-	_, err := duo.GetU2FTokens(func(values *url.Values){
+	_, err := duo.GetU2FTokens(func(values *url.Values) {
 		values.Set("limit", "200")
 		values.Set("offset", "1")
 		return

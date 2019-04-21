@@ -37,16 +37,16 @@ var (
 	secSha1 = base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
 
 	rfcMatrixTCs = []tc{
-		tc{0, "755224", otp.AlgorithmSHA1, secSha1},
-		tc{1, "287082", otp.AlgorithmSHA1, secSha1},
-		tc{2, "359152", otp.AlgorithmSHA1, secSha1},
-		tc{3, "969429", otp.AlgorithmSHA1, secSha1},
-		tc{4, "338314", otp.AlgorithmSHA1, secSha1},
-		tc{5, "254676", otp.AlgorithmSHA1, secSha1},
-		tc{6, "287922", otp.AlgorithmSHA1, secSha1},
-		tc{7, "162583", otp.AlgorithmSHA1, secSha1},
-		tc{8, "399871", otp.AlgorithmSHA1, secSha1},
-		tc{9, "520489", otp.AlgorithmSHA1, secSha1},
+		{0, "755224", otp.AlgorithmSHA1, secSha1},
+		{1, "287082", otp.AlgorithmSHA1, secSha1},
+		{2, "359152", otp.AlgorithmSHA1, secSha1},
+		{3, "969429", otp.AlgorithmSHA1, secSha1},
+		{4, "338314", otp.AlgorithmSHA1, secSha1},
+		{5, "254676", otp.AlgorithmSHA1, secSha1},
+		{6, "287922", otp.AlgorithmSHA1, secSha1},
+		{7, "162583", otp.AlgorithmSHA1, secSha1},
+		{8, "399871", otp.AlgorithmSHA1, secSha1},
+		{9, "520489", otp.AlgorithmSHA1, secSha1},
 	}
 )
 
@@ -112,6 +112,16 @@ func TestValidateInvalid(t *testing.T) {
 // This tests for issue #10 - secrets without padding
 func TestValidatePadding(t *testing.T) {
 	valid, err := ValidateCustom("831097", 0, "JBSWY3DPEHPK3PX",
+		ValidateOpts{
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmSHA1,
+		})
+	require.NoError(t, err, "Expected no error.")
+	require.Equal(t, true, valid, "Valid should be true.")
+}
+
+func TestValidateLowerCaseSecret(t *testing.T) {
+	valid, err := ValidateCustom("831097", 0, "jbswy3dpehpk3px",
 		ValidateOpts{
 			Digits:    otp.DigitsSix,
 			Algorithm: otp.AlgorithmSHA1,

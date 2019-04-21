@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Luzifer/go_helpers/str"
+	"github.com/Luzifer/go_helpers/v2/str"
 )
 
 func GetDigestAuth(resp *http.Response, method, requestPath, user, password string) string {

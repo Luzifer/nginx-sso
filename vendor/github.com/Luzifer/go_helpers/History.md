@@ -1,3 +1,35 @@
+# 2.9.1 / 2019-02-28
+
+  * Fix unversioned import paths
+
+# 2.9.0 / 2019-02-28
+
+  * Add support for Go 1.11+ modules
+
+# 2.8.1 / 2018-11-19
+
+  * Also log query parameters
+
+# 2.8.0 / 2018-09-17
+
+  * Add GZip wrapper
+
+# 2.7.0 / 2018-07-05
+
+  * Add helpers to parse time strings using multiple formats at once
+
+# 2.6.0 / 2018-06-07
+
+  * Add a YAML to JSON converter as yaml-helper
+
+# 2.5.0 / 2018-04-23
+
+  * Add output splitter
+
+# 2.4.0 / 2018-04-03
+
+  * Add proxy IP detection
+
 # 2.3.1 / 2017-11-05
 
   * Fix TIP version error: Sprintf format %s has arg of wrong type byte

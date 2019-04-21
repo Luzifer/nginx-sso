@@ -14,11 +14,13 @@ type Crowd struct {
 	passwd  string
 	url     string
 	cookies http.CookieJar
+	Client *http.Client
 }
 
 // New initializes & returns a Crowd object.
 func New(appuser string, apppass string, baseurl string) (Crowd, error) {
 	cr := Crowd{
+		Client: http.DefaultClient,
 		user:   appuser,
 		passwd: apppass,
 		url:    baseurl,
