@@ -1,4 +1,4 @@
-package main
+package yubikey
 
 import (
 	"net/http"
@@ -11,27 +11,27 @@ import (
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
-func init() {
-	registerMFAProvider(&mfaYubikey{})
-}
-
-type mfaYubikey struct {
+type MFAYubikey struct {
 	ClientID  string `yaml:"client_id"`
 	SecretKey string `yaml:"secret_key"`
 }
 
+func New() *MFAYubikey {
+	return &MFAYubikey{}
+}
+
 // ProviderID needs to return an unique string to identify
 // this special MFA provider
-func (m mfaYubikey) ProviderID() (id string) { return "yubikey" }
+func (m MFAYubikey) ProviderID() (id string) { return "yubikey" }
 
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the plugins.ErrProviderUnconfigured
-func (m *mfaYubikey) Configure(yamlSource []byte) (err error) {
+func (m *MFAYubikey) Configure(yamlSource []byte) (err error) {
 	envelope := struct {
 		MFA struct {
-			Yubikey *mfaYubikey `yaml:"yubikey"`
+			Yubikey *MFAYubikey `yaml:"yubikey"`
 		} `yaml:"mfa"`
 	}{}
 
@@ -51,7 +51,7 @@ func (m *mfaYubikey) Configure(yamlSource []byte) (err error) {
 
 // ValidateMFA takes the user from the login cookie and performs a
 // validation against the provided MFA configuration for this user
-func (m mfaYubikey) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
+func (m MFAYubikey) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
 	var keyInput string
 
 	yubiAuth, err := yubigo.NewYubiAuth(m.ClientID, m.SecretKey)
@@ -65,7 +65,7 @@ func (m mfaYubikey) ValidateMFA(res http.ResponseWriter, r *http.Request, user s
 		}
 
 		for key, values := range r.Form {
-			if strings.HasSuffix(key, mfaLoginFieldName) && strings.HasPrefix(values[0], c.AttributeString("device")) {
+			if strings.HasSuffix(key, plugins.MFALoginFieldName) && strings.HasPrefix(values[0], c.AttributeString("device")) {
 				keyInput = values[0]
 			}
 		}

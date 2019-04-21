@@ -10,11 +10,9 @@ import (
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
-const mfaLoginFieldName = "mfa-token"
-
 var mfaLoginField = plugins.LoginField{
 	Label:       "MFA Token",
-	Name:        mfaLoginFieldName,
+	Name:        plugins.MFALoginFieldName,
 	Placeholder: "(optional)",
 	Type:        "text",
 }

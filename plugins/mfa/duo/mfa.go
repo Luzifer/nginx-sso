@@ -1,4 +1,4 @@
-package main
+package duo
 
 import (
 	"net"
@@ -21,29 +21,29 @@ const (
 
 var mfaDuoTrustedIPHeaders = []string{"X-Forwarded-For", "X-Real-IP"}
 
-func init() {
-	registerMFAProvider(&mfaDuo{})
-}
-
-type mfaDuo struct {
+type MFADuo struct {
 	IKey      string `yaml:"ikey"`
 	SKey      string `yaml:"skey"`
 	Host      string `yaml:"host"`
 	UserAgent string `yaml:"user_agent"`
 }
 
+func New() *MFADuo {
+	return &MFADuo{}
+}
+
 // ProviderID needs to return an unique string to identify
 // this special MFA provider
-func (m mfaDuo) ProviderID() (id string) { return "duo" }
+func (m MFADuo) ProviderID() (id string) { return "duo" }
 
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the plugins.ErrProviderUnconfigured
-func (m *mfaDuo) Configure(yamlSource []byte) (err error) {
+func (m *MFADuo) Configure(yamlSource []byte) (err error) {
 	envelope := struct {
 		MFA struct {
-			Duo *mfaDuo `yaml:"duo"`
+			Duo *MFADuo `yaml:"duo"`
 		} `yaml:"mfa"`
 	}{}
 
@@ -64,7 +64,7 @@ func (m *mfaDuo) Configure(yamlSource []byte) (err error) {
 
 // ValidateMFA takes the user from the login cookie and performs a
 // validation against the provided MFA configuration for this user
-func (m mfaDuo) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
+func (m MFADuo) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
 	var keyInput string
 
 	// Look for mfaConfigs with own provider name
@@ -81,7 +81,7 @@ func (m mfaDuo) ValidateMFA(res http.ResponseWriter, r *http.Request, user strin
 		duo := authapi.NewAuthApi(*duoapi.NewDuoApi(m.IKey, m.SKey, m.Host, m.UserAgent, duoapi.SetTimeout(mfaDuoRequestTimeout)))
 
 		for key, values := range r.Form {
-			if strings.HasSuffix(key, mfaLoginFieldName) && len(values[0]) > 0 {
+			if strings.HasSuffix(key, plugins.MFALoginFieldName) && len(values[0]) > 0 {
 				keyInput = values[0]
 			}
 		}
@@ -108,7 +108,7 @@ func (m mfaDuo) ValidateMFA(res http.ResponseWriter, r *http.Request, user strin
 	return plugins.ErrNoValidUserFound
 }
 
-func (m mfaDuo) findIP(r *http.Request) (string, error) {
+func (m MFADuo) findIP(r *http.Request) (string, error) {
 	for _, hdr := range mfaDuoTrustedIPHeaders {
 		if value := r.Header.Get(hdr); value != "" {
 			return m.parseIP(value)
@@ -118,7 +118,7 @@ func (m mfaDuo) findIP(r *http.Request) (string, error) {
 	return m.parseIP(r.RemoteAddr)
 }
 
-func (m mfaDuo) parseIP(s string) (string, error) {
+func (m MFADuo) parseIP(s string) (string, error) {
 	ip, _, err := net.SplitHostPort(s)
 	if err == nil {
 		return ip, nil

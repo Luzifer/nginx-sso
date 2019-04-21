@@ -2,6 +2,8 @@ package plugins
 
 import "net/http"
 
+const MFALoginFieldName = "mfa-token"
+
 type MFAProvider interface {
 	// ProviderID needs to return an unique string to identify
 	// this special MFA provider

@@ -1,4 +1,4 @@
-package main
+package totp
 
 import (
 	"net/http"
@@ -12,27 +12,27 @@ import (
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
-func init() {
-	registerMFAProvider(&mfaTOTP{})
-}
-
-type mfaTOTP struct{}
+type MFATOTP struct{}
 
 // ProviderID needs to return an unique string to identify
 // this special MFA provider
-func (m mfaTOTP) ProviderID() (id string) {
+func (m MFATOTP) ProviderID() (id string) {
 	return "totp"
+}
+
+func New() *MFATOTP {
+	return &MFATOTP{}
 }
 
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the plugins.ErrProviderUnconfigured
-func (m mfaTOTP) Configure(yamlSource []byte) (err error) { return nil }
+func (m MFATOTP) Configure(yamlSource []byte) (err error) { return nil }
 
 // ValidateMFA takes the user from the login cookie and performs a
 // validation against the provided MFA configuration for this user
-func (m mfaTOTP) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
+func (m MFATOTP) ValidateMFA(res http.ResponseWriter, r *http.Request, user string, mfaCfgs []plugins.MFAConfig) error {
 	// Look for mfaConfigs with own provider name
 	for _, c := range mfaCfgs {
 		// Provider has been renamed, keep "google" for backwards compatibility
@@ -46,7 +46,7 @@ func (m mfaTOTP) ValidateMFA(res http.ResponseWriter, r *http.Request, user stri
 		}
 
 		for key, values := range r.Form {
-			if strings.HasSuffix(key, mfaLoginFieldName) && values[0] == token {
+			if strings.HasSuffix(key, plugins.MFALoginFieldName) && values[0] == token {
 				return nil
 			}
 		}
@@ -56,7 +56,7 @@ func (m mfaTOTP) ValidateMFA(res http.ResponseWriter, r *http.Request, user stri
 	return plugins.ErrNoValidUserFound
 }
 
-func (m mfaTOTP) exec(c plugins.MFAConfig) (string, error) {
+func (m MFATOTP) exec(c plugins.MFAConfig) (string, error) {
 	secret := c.AttributeString("secret")
 
 	// By default use Google Authenticator compatible settings
