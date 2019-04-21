@@ -62,6 +62,18 @@ providers:
     app_name: ""
     app_pass: ""
 
+  # Authentication through OAuth2 workflow with Google Account
+  # Supports: Users
+  google_oauth:
+    client_id: ""
+    client_secret: ""
+    redirect_url: "https://login.luifer.io/login"
+
+    # Optional, defaults to no limitations
+    require_domain: "example.com"
+    # Optional, defaults to "user-id"
+    user_id_method: "full-email"
+
   # Authentication against (Open)LDAP server
   # Supports: Users, Groups
   ldap:

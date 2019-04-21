@@ -108,11 +108,12 @@ func loadConfiguration() error {
 }
 
 func main() {
+	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
+	registerModules()
+
 	if err := loadConfiguration(); err != nil {
 		log.WithError(err).Fatal("Unable to load configuration")
 	}
-
-	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
 
 	http.HandleFunc("/", handleRootRequest)
 	http.HandleFunc("/auth", handleAuthRequest)
@@ -187,7 +188,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		"go": redirURL,
 	}
 
-	if r.Method == "POST" {
+	if r.Method == "POST" || r.URL.Query().Get("code") != "" {
 		// Simple authentication
 		user, mfaCfgs, err := loginUser(res, r)
 		switch err {
@@ -233,6 +234,17 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Store redirect URL in session (required for oAuth2 flows)
+	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, "main"}, "-")) // #nosec G104 - On error empty session is returned
+	sess.Options = mainCfg.Cookie.GetSessionOpts()
+	sess.Values["go"] = redirURL
+
+	if err := sess.Save(r, res); err != nil {
+		log.WithError(err).Error("Unable to save session")
+		http.Error(res, "Something went wrong", http.StatusInternalServerError)
+	}
+
+	// Render login page
 	tpl := pongo2.Must(pongo2.FromFile(path.Join(cfg.TemplateDir, "index.html")))
 	if err := tpl.ExecuteWriter(pongo2.Context{
 		"active_methods": getFrontendAuthenticators(),

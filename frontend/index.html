@@ -56,8 +56,18 @@
                       {% for field in fields %}
                       <div class="form-group">
                         <label for="{{ method }}-{{ field.Name }}">{{ field.Label }}</label>
-                        <input type="{{ field.Type }}" class="form-control" placeholder="{{ field.Placeholder }}"
-                               name="{{ method }}-{{ field.Name }}" id="{{ method }}-{{ field.Name }}" />
+                        <input
+                          class="form-control"
+                          id="{{ method }}-{{ field.Name }}"
+                          name="{{ method }}-{{ field.Name }}"
+                          {% if field.Action %}onclick="{{ field.Action }}"{% endif %}
+                          {% if field.Type == "button" %}
+                          value="{{ field.Placeholder }}"
+                          {% else %}
+                          placeholder="{{ field.Placeholder }}"
+                          {% endif %}
+                          type="{{ field.Type }}"
+                        />
                       </div>
                       {% endfor %}
 

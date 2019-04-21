@@ -48,6 +48,7 @@ type Authenticator interface {
 }
 
 type LoginField struct {
+	Action      string
 	Label       string
 	Name        string
 	Placeholder string
