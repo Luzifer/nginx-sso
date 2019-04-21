@@ -1,4 +1,4 @@
-package main
+package ldap
 
 import (
 	"crypto/tls"
@@ -10,6 +10,8 @@ import (
 	ldap "gopkg.in/ldap.v2"
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/gorilla/sessions"
+
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
@@ -18,11 +20,7 @@ const (
 	authLDAPProtoLDAPs = "ldaps"
 )
 
-func init() {
-	registerAuthenticator(&authLDAP{})
-}
-
-type authLDAP struct {
+type AuthLDAP struct {
 	EnableBasicAuth       bool   `yaml:"enable_basic_auth"`
 	GroupMembershipFilter string `yaml:"group_membership_filter"`
 	GroupSearchBase       string `yaml:"group_search_base"`
@@ -37,20 +35,30 @@ type authLDAP struct {
 		ValidateHostname string `yaml:"validate_hostname"`
 		AllowInsecure    bool   `yaml:"allow_insecure"`
 	} `yaml:"tls_config"`
+
+	cookie      plugins.CookieConfig
+	cookieStore *sessions.CookieStore
+}
+
+func New(cs *sessions.CookieStore) *AuthLDAP {
+	return &AuthLDAP{
+		cookieStore: cs,
+	}
 }
 
 // AuthenticatorID needs to return an unique string to identify
 // this special authenticator
-func (a authLDAP) AuthenticatorID() string { return "ldap" }
+func (a AuthLDAP) AuthenticatorID() string { return "ldap" }
 
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the plugins.ErrProviderUnconfigured
-func (a *authLDAP) Configure(yamlSource []byte) error {
+func (a *AuthLDAP) Configure(yamlSource []byte) error {
 	envelope := struct {
+		Cookie    plugins.CookieConfig `yaml:"cookie"`
 		Providers struct {
-			LDAP *authLDAP `yaml:"ldap"`
+			LDAP *AuthLDAP `yaml:"ldap"`
 		} `yaml:"providers"`
 	}{}
 
@@ -73,6 +81,8 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 	a.UserSearchFilter = envelope.Providers.LDAP.UserSearchFilter
 	a.UsernameAttribute = envelope.Providers.LDAP.UsernameAttribute
 	a.TLSConfig = envelope.Providers.LDAP.TLSConfig
+
+	a.cookie = envelope.Cookie
 
 	// Set defaults
 	if a.UserSearchFilter == "" {
@@ -100,7 +110,7 @@ func (a *authLDAP) Configure(yamlSource []byte) error {
 // a cookie, header or other methods
 // If no user was detected the plugins.ErrNoValidUserFound needs to be
 // returned
-func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
+func (a AuthLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	var alias, user string
 
 	if a.EnableBasicAuth {
@@ -116,7 +126,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 	}
 
 	if user == "" {
-		sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+		sess, err := a.cookieStore.Get(r, strings.Join([]string{a.cookie.Prefix, a.AuthenticatorID()}, "-"))
 		if err != nil {
 			return "", nil, plugins.ErrNoValidUserFound
 		}
@@ -132,7 +142,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 		}
 
 		// We had a cookie, lets renew it
-		sess.Options = mainCfg.Cookie.GetSessionOpts()
+		sess.Options = a.cookie.GetSessionOpts()
 		if err := sess.Save(r, res); err != nil {
 			return "", nil, err
 		}
@@ -149,7 +159,7 @@ func (a authLDAP) DetectUser(res http.ResponseWriter, r *http.Request) (string, 
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the plugins.ErrNoValidUserFound
 // needs to be returned
-func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
+func (a AuthLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -163,8 +173,8 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []plu
 		return "", nil, err
 	}
 
-	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
-	sess.Options = mainCfg.Cookie.GetSessionOpts()
+	sess, _ := a.cookieStore.Get(r, strings.Join([]string{a.cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
+	sess.Options = a.cookie.GetSessionOpts()
 	sess.Values["user"] = userDN
 	sess.Values["alias"] = alias
 	return userDN, nil, sess.Save(r, res)
@@ -173,7 +183,7 @@ func (a authLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []plu
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
 // needs to return nil.
-func (a authLDAP) LoginFields() (fields []plugins.LoginField) {
+func (a AuthLDAP) LoginFields() (fields []plugins.LoginField) {
 	return []plugins.LoginField{
 		{
 			Label:       "Username",
@@ -192,16 +202,16 @@ func (a authLDAP) LoginFields() (fields []plugins.LoginField) {
 
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
-func (a authLDAP) Logout(res http.ResponseWriter, r *http.Request) (err error) {
-	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
-	sess.Options = mainCfg.Cookie.GetSessionOpts()
+func (a AuthLDAP) Logout(res http.ResponseWriter, r *http.Request) (err error) {
+	sess, _ := a.cookieStore.Get(r, strings.Join([]string{a.cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
+	sess.Options = a.cookie.GetSessionOpts()
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
 }
 
 // checkLogin searches for the username using the specified UserSearchFilter
 // and returns the UserDN and an error (plugins.ErrNoValidUserFound / processing error)
-func (a authLDAP) checkLogin(username, password, aliasAttribute string) (string, string, error) {
+func (a AuthLDAP) checkLogin(username, password, aliasAttribute string) (string, string, error) {
 	l, err := a.dial()
 	if err != nil {
 		return "", "", err
@@ -242,7 +252,7 @@ func (a authLDAP) checkLogin(username, password, aliasAttribute string) (string,
 	return userDN, alias, nil
 }
 
-func (a authLDAP) portFromScheme(scheme, override string) string {
+func (a AuthLDAP) portFromScheme(scheme, override string) string {
 	if override != "" {
 		return override
 	}
@@ -258,7 +268,7 @@ func (a authLDAP) portFromScheme(scheme, override string) string {
 }
 
 // dial connects to the LDAP server and authenticates using manager_dn
-func (a authLDAP) dial() (*ldap.Conn, error) {
+func (a AuthLDAP) dial() (*ldap.Conn, error) {
 	u, err := url.Parse(a.Server)
 	if err != nil {
 		return nil, err
@@ -305,7 +315,7 @@ func (a authLDAP) dial() (*ldap.Conn, error) {
 }
 
 // getUserGroups searches for groups containing the user
-func (a authLDAP) getUserGroups(userDN, alias string) ([]string, error) {
+func (a AuthLDAP) getUserGroups(userDN, alias string) ([]string, error) {
 	l, err := a.dial()
 	if err != nil {
 		return nil, err
@@ -343,4 +353,4 @@ func (a authLDAP) getUserGroups(userDN, alias string) ([]string, error) {
 // configuration return true. If this is true the login interface
 // will display an additional field for this provider for the user
 // to fill in their MFA token.
-func (a authLDAP) SupportsMFA() bool { return false } // TODO: Implement
+func (a AuthLDAP) SupportsMFA() bool { return false } // TODO: Implement

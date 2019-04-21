@@ -1,4 +1,4 @@
-package main
+package crowd
 
 import (
 	"net/http"
@@ -11,11 +11,7 @@ import (
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
-func init() {
-	registerAuthenticator(&authCrowd{})
-}
-
-type authCrowd struct {
+type AuthCrowd struct {
 	URL         string `yaml:"url"`
 	AppName     string `yaml:"app_name"`
 	AppPassword string `yaml:"app_pass"`
@@ -23,18 +19,22 @@ type authCrowd struct {
 	crowd crowd.Crowd
 }
 
+func New() *AuthCrowd {
+	return &AuthCrowd{}
+}
+
 // AuthenticatorID needs to return an unique string to identify
 // this special authenticator
-func (a authCrowd) AuthenticatorID() string { return "crowd" }
+func (a AuthCrowd) AuthenticatorID() string { return "crowd" }
 
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the plugins.ErrProviderUnconfigured
-func (a *authCrowd) Configure(yamlSource []byte) error {
+func (a *AuthCrowd) Configure(yamlSource []byte) error {
 	envelope := struct {
 		Providers struct {
-			Crowd *authCrowd `yaml:"crowd"`
+			Crowd *AuthCrowd `yaml:"crowd"`
 		} `yaml:"providers"`
 	}{}
 
@@ -64,7 +64,7 @@ func (a *authCrowd) Configure(yamlSource []byte) error {
 // a cookie, header or other methods
 // If no user was detected the plugins.ErrNoValidUserFound needs to be
 // returned
-func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
+func (a AuthCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	cc, err := a.crowd.GetCookieConfig()
 	if err != nil {
 		return "", nil, err
@@ -108,7 +108,7 @@ func (a authCrowd) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the plugins.ErrNoValidUserFound
 // needs to be returned
-func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
+func (a AuthCrowd) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -141,7 +141,7 @@ func (a authCrowd) Login(res http.ResponseWriter, r *http.Request) (string, []pl
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
 // needs to return nil.
-func (a authCrowd) LoginFields() (fields []plugins.LoginField) {
+func (a AuthCrowd) LoginFields() (fields []plugins.LoginField) {
 	return []plugins.LoginField{
 		{
 			Label:       "Username",
@@ -160,7 +160,7 @@ func (a authCrowd) LoginFields() (fields []plugins.LoginField) {
 
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
-func (a authCrowd) Logout(res http.ResponseWriter, r *http.Request) (err error) {
+func (a AuthCrowd) Logout(res http.ResponseWriter, r *http.Request) (err error) {
 	cc, err := a.crowd.GetCookieConfig()
 	if err != nil {
 		return err
@@ -184,4 +184,4 @@ func (a authCrowd) Logout(res http.ResponseWriter, r *http.Request) (err error) 
 // configuration return true. If this is true the login interface
 // will display an additional field for this provider for the user
 // to fill in their MFA token.
-func (a authCrowd) SupportsMFA() bool { return false }
+func (a AuthCrowd) SupportsMFA() bool { return false }

@@ -1,4 +1,4 @@
-package main
+package simple
 
 import (
 	"net/http"
@@ -7,33 +7,41 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/gorilla/sessions"
+
 	"github.com/Luzifer/go_helpers/str"
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
-func init() {
-	registerAuthenticator(&authSimple{})
-}
-
-type authSimple struct {
+type AuthSimple struct {
 	EnableBasicAuth bool                           `yaml:"enable_basic_auth"`
 	Users           map[string]string              `yaml:"users"`
 	Groups          map[string][]string            `yaml:"groups"`
 	MFA             map[string][]plugins.MFAConfig `yaml:"mfa"`
+
+	cookie      plugins.CookieConfig
+	cookieStore *sessions.CookieStore
+}
+
+func New(cs *sessions.CookieStore) *AuthSimple {
+	return &AuthSimple{
+		cookieStore: cs,
+	}
 }
 
 // AuthenticatorID needs to return an unique string to identify
 // this special authenticator
-func (a authSimple) AuthenticatorID() string { return "simple" }
+func (a AuthSimple) AuthenticatorID() string { return "simple" }
 
 // Configure loads the configuration for the Authenticator from the
 // global config.yaml file which is passed as a byte-slice.
 // If no configuration for the Authenticator is supplied the function
 // needs to return the plugins.ErrProviderUnconfigured
-func (a *authSimple) Configure(yamlSource []byte) error {
+func (a *AuthSimple) Configure(yamlSource []byte) error {
 	envelope := struct {
+		Cookie    plugins.CookieConfig `yaml:"cookie"`
 		Providers struct {
-			Simple *authSimple `yaml:"simple"`
+			Simple *AuthSimple `yaml:"simple"`
 		} `yaml:"providers"`
 	}{}
 
@@ -50,6 +58,8 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 	a.Groups = envelope.Providers.Simple.Groups
 	a.MFA = envelope.Providers.Simple.MFA
 
+	a.cookie = envelope.Cookie
+
 	return nil
 }
 
@@ -57,7 +67,7 @@ func (a *authSimple) Configure(yamlSource []byte) error {
 // a cookie, header or other methods
 // If no user was detected the plugins.ErrNoValidUserFound needs to be
 // returned
-func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
+func (a AuthSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string, []string, error) {
 	var user string
 
 	if a.EnableBasicAuth {
@@ -76,7 +86,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 	}
 
 	if user == "" {
-		sess, err := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-"))
+		sess, err := a.cookieStore.Get(r, strings.Join([]string{a.cookie.Prefix, a.AuthenticatorID()}, "-"))
 		if err != nil {
 			return "", nil, plugins.ErrNoValidUserFound
 		}
@@ -88,7 +98,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 		}
 
 		// We had a cookie, lets renew it
-		sess.Options = mainCfg.Cookie.GetSessionOpts()
+		sess.Options = a.cookie.GetSessionOpts()
 		if err := sess.Save(r, res); err != nil {
 			return "", nil, err
 		}
@@ -110,7 +120,7 @@ func (a authSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 // in order to use DetectUser for the next login.
 // If the user did not login correctly the plugins.ErrNoValidUserFound
 // needs to be returned
-func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
+func (a AuthSimple) Login(res http.ResponseWriter, r *http.Request) (string, []plugins.MFAConfig, error) {
 	username := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "username"}, "-"))
 	password := r.FormValue(strings.Join([]string{a.AuthenticatorID(), "password"}, "-"))
 
@@ -122,8 +132,8 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []p
 			continue
 		}
 
-		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
-		sess.Options = mainCfg.Cookie.GetSessionOpts()
+		sess, _ := a.cookieStore.Get(r, strings.Join([]string{a.cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
+		sess.Options = a.cookie.GetSessionOpts()
 		sess.Values["user"] = u
 		return u, a.MFA[u], sess.Save(r, res)
 	}
@@ -134,7 +144,7 @@ func (a authSimple) Login(res http.ResponseWriter, r *http.Request) (string, []p
 // LoginFields needs to return the fields required for this login
 // method. If no login using this method is possible the function
 // needs to return nil.
-func (a authSimple) LoginFields() (fields []plugins.LoginField) {
+func (a AuthSimple) LoginFields() (fields []plugins.LoginField) {
 	return []plugins.LoginField{
 		{
 			Label:       "Username",
@@ -153,9 +163,9 @@ func (a authSimple) LoginFields() (fields []plugins.LoginField) {
 
 // Logout is called when the user visits the logout endpoint and
 // needs to destroy any persistent stored cookies
-func (a authSimple) Logout(res http.ResponseWriter, r *http.Request) (err error) {
-	sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
-	sess.Options = mainCfg.Cookie.GetSessionOpts()
+func (a AuthSimple) Logout(res http.ResponseWriter, r *http.Request) (err error) {
+	sess, _ := a.cookieStore.Get(r, strings.Join([]string{a.cookie.Prefix, a.AuthenticatorID()}, "-")) // #nosec G104 - On error empty session is returned
+	sess.Options = a.cookie.GetSessionOpts()
 	sess.Options.MaxAge = -1 // Instant delete
 	return sess.Save(r, res)
 }
@@ -165,4 +175,4 @@ func (a authSimple) Logout(res http.ResponseWriter, r *http.Request) (err error)
 // configuration return true. If this is true the login interface
 // will display an additional field for this provider for the user
 // to fill in their MFA token.
-func (a authSimple) SupportsMFA() bool { return true }
+func (a AuthSimple) SupportsMFA() bool { return true }
