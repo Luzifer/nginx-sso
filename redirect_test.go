@@ -14,7 +14,7 @@ func TestGetRedirectGet(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, testURL, nil)
 
-	rURL, err := getRedirectURL(req)
+	rURL, err := getRedirectURL(req, "")
 	if err != nil {
 		t.Errorf("getRedirectURL caused an error in GET: %s", err)
 	}
@@ -24,13 +24,13 @@ func TestGetRedirectGet(t *testing.T) {
 	}
 }
 
-func TestGetRedirectGetEmpty(t *testing.T) {
+func TestGetRedirectFallback(t *testing.T) {
 	testURL := "https://example.com/login"
-	expectURL := ""
+	expectURL := "https://example.com/default"
 
 	req, _ := http.NewRequest(http.MethodGet, testURL, nil)
 
-	rURL, err := getRedirectURL(req)
+	rURL, err := getRedirectURL(req, expectURL)
 	if err != nil {
 		t.Errorf("getRedirectURL caused an error in GET: %s", err)
 	}
@@ -51,7 +51,7 @@ func TestGetRedirectPost(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodPost, testURL, nil)
 	req.Form = body // Force-set the form values to emulate parsed form
 
-	rURL, err := getRedirectURL(req)
+	rURL, err := getRedirectURL(req, "")
 	if err != nil {
 		t.Errorf("getRedirectURL caused an error in POST: %s", err)
 	}

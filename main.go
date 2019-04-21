@@ -36,10 +36,11 @@ type mainConfig struct {
 		Port int    `yaml:"port"`
 	} `yaml:"listen"`
 	Login struct {
-		Title         string            `yaml:"title"`
-		DefaultMethod string            `yaml:"default_method"`
-		HideMFAField  bool              `yaml:"hide_mfa_field"`
-		Names         map[string]string `yaml:"names"`
+		Title           string            `yaml:"title"`
+		DefaultMethod   string            `yaml:"default_method"`
+		DefaultRedirect string            `yaml:"default_redirect"`
+		HideMFAField    bool              `yaml:"hide_mfa_field"`
+		Names           map[string]string `yaml:"names"`
 	} `yaml:"login"`
 	Plugins struct {
 		Directory string `yaml:"directory"`
@@ -181,7 +182,7 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 }
 
 func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
-	redirURL, err := getRedirectURL(r)
+	redirURL, err := getRedirectURL(r, mainCfg.Login.DefaultRedirect)
 	if err != nil {
 		http.Error(res, "Invalid redirect URL specified", http.StatusBadRequest)
 	}
@@ -254,7 +255,7 @@ func handleLoginRequest(res http.ResponseWriter, r *http.Request) {
 }
 
 func handleLogoutRequest(res http.ResponseWriter, r *http.Request) {
-	redirURL, err := getRedirectURL(r)
+	redirURL, err := getRedirectURL(r, mainCfg.Login.DefaultRedirect)
 	if err != nil {
 		http.Error(res, "Invalid redirect URL specified", http.StatusBadRequest)
 	}
