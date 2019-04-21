@@ -1,3 +1,8 @@
+# 0.18.0 / 2019-04-21
+
+  * Add redirect on root URL to login page
+  * Add default redirect URL for missing go-parameter
+
 # 0.17.0 / 2019-04-21
 
   * Work around missing URL parameters (#39)
