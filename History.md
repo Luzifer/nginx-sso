@@ -1,3 +1,8 @@
+# 0.20.0 / 2019-04-22
+
+  * Add special group for all authenticated users
+  * Modernize login dialog
+
 # 0.19.0 / 2019-04-22
 
   * Update dependencies
