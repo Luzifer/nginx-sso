@@ -46,6 +46,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:d8ee1b165eb7f4fd9ada718e1e7eeb0bc1fd462592d0bd823df694443f448681"
+  name = "github.com/coreos/go-oidc"
+  packages = ["."]
+  pruneopts = ""
+  revision = "1180514eaf4d9f38d0d19eef639a1d695e066e72"
+  version = "v2.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:f65bcfc1efab621eaf5df43869dd1aee399a298c299423c08b96a3b037437c48"
   name = "github.com/duosecurity/duo_api_golang"
@@ -143,6 +151,17 @@
   version = "v0.8.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:de5481dda0c081b66450e391bbb1a5c4435b13e3c0bbf0133ba1a5baeda7b7af"
+  name = "github.com/pquerna/cachecontrol"
+  packages = [
+    ".",
+    "cacheobject",
+  ]
+  pruneopts = ""
+  revision = "1555304b9b35fdd2b425bccf1a5613677705e7d0"
+
+[[projects]]
   digest = "1:d8c398c75a666d415196ba289402c3f52b595d8cede451a9e57278354e327a93"
   name = "github.com/pquerna/otp"
   packages = [
@@ -202,6 +221,9 @@
   packages = [
     "bcrypt",
     "blowfish",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "pbkdf2",
   ]
   pruneopts = ""
   revision = "df01cb2cc480549d72034218dd98bf97671450ac"
@@ -371,6 +393,18 @@
   version = "v2.5.1"
 
 [[projects]]
+  digest = "1:40cf02345bfa29fb217cfe0767a9416d99569d4ff21dbb1fd3378ef10682549c"
+  name = "gopkg.in/square/go-jose.v2"
+  packages = [
+    ".",
+    "cipher",
+    "json",
+  ]
+  pruneopts = ""
+  revision = "730df5f748271903322feb182be83b43ebbbe27d"
+  version = "v2.3.1"
+
+[[projects]]
   branch = "v2"
   digest = "1:bf922c860f64bb6372daa82bb9c1e8ed144e97ac7587efa80d08b4e98737e9ea"
   name = "gopkg.in/validator.v2"
@@ -393,6 +427,7 @@
     "github.com/GeertJohan/yubigo",
     "github.com/Luzifer/go_helpers/str",
     "github.com/Luzifer/rconfig",
+    "github.com/coreos/go-oidc",
     "github.com/duosecurity/duo_api_golang",
     "github.com/duosecurity/duo_api_golang/authapi",
     "github.com/flosch/pongo2",
