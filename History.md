@@ -1,3 +1,8 @@
+# 0.21.0 / 2019-04-23
+
+  * [#35] Implement OpenID Connect auth provider
+  * Fix: Only overwrite default if config is non-empty
+
 # 0.20.1 / 2019-04-22
 
   * Fix: Do not list login methods without label
