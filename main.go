@@ -31,11 +31,11 @@ type mainConfig struct {
 		Port int    `yaml:"port"`
 	} `yaml:"listen"`
 	Login struct {
-		Title           string            `yaml:"title"`
-		DefaultMethod   string            `yaml:"default_method"`
-		DefaultRedirect string            `yaml:"default_redirect"`
-		HideMFAField    bool              `yaml:"hide_mfa_field"`
-		Names           map[string]string `yaml:"names"`
+		Title           string            `yaml:"title" json:"title"`
+		DefaultMethod   string            `yaml:"default_method" json:"default_method"`
+		DefaultRedirect string            `yaml:"default_redirect" json:"default_redirect"`
+		HideMFAField    bool              `yaml:"hide_mfa_field" json:"hide_mfa_field"`
+		Names           map[string]string `yaml:"names" json:"names"`
 	} `yaml:"login"`
 	Plugins struct {
 		Directory string `yaml:"directory"`

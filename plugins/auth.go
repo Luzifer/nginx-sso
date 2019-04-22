@@ -48,9 +48,9 @@ type Authenticator interface {
 }
 
 type LoginField struct {
-	Action      string
-	Label       string
-	Name        string
-	Placeholder string
-	Type        string
+	Action      string `json:"action"`
+	Label       string `json:"label"`
+	Name        string `json:"name"`
+	Placeholder string `json:"placeholder"`
+	Type        string `json:"type"`
 }
