@@ -76,7 +76,11 @@ func (a *AuthGoogleOAuth) Configure(yamlSource []byte) (err error) {
 	a.ClientSecret = envelope.Providers.GoogleOAuth.ClientSecret
 	a.RedirectURL = envelope.Providers.GoogleOAuth.RedirectURL
 	a.RequireDomain = envelope.Providers.GoogleOAuth.RequireDomain
-	a.UserIDMethod = envelope.Providers.GoogleOAuth.UserIDMethod
+
+	if envelope.Providers.GoogleOAuth.UserIDMethod != "" {
+		a.UserIDMethod = envelope.Providers.GoogleOAuth.UserIDMethod
+	}
+
 	a.cookie = envelope.Cookie
 
 	return nil
