@@ -1,3 +1,7 @@
+# 0.20.1 / 2019-04-22
+
+  * Fix: Do not list login methods without label
+
 # 0.20.0 / 2019-04-22
 
   * Add special group for all authenticated users
