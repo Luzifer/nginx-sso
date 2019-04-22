@@ -1,3 +1,12 @@
+# 0.19.0 / 2019-04-22
+
+  * Update dependencies
+  * Move auth plugins to own modules
+  * Move MFA plugins to own modules
+  * Add default page in case neither redirect was specified
+  * Implement oAuth2 provider: Google
+  * Prepare moving auth plugins to own modules
+
 # 0.18.0 / 2019-04-21
 
   * Add redirect on root URL to login page
