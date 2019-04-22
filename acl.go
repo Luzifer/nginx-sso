@@ -148,6 +148,10 @@ func (a aclRuleSet) HasAccess(user string, groups []string, r *http.Request) acl
 		}
 	}
 
+	if str.StringInSlice("@_authenticated", a.Allow) && user != "" {
+		return accessAllow
+	}
+
 	// Neither user nor group are handled
 	return accessDunno
 }

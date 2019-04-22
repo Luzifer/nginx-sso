@@ -59,6 +59,30 @@ func TestRuleSetMatcher(t *testing.T) {
 	}
 }
 
+func TestGroupAuthenticated(t *testing.T) {
+	r := aclRuleSet{
+		Rules: []aclRule{
+			{
+				Field:       "field_a",
+				MatchString: aclTestString("expected"),
+			},
+		},
+		Allow: []string{"@_authenticated"},
+	}
+	fields := map[string]string{
+		"field_a": "expected",
+	}
+
+	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) != accessAllow {
+		t.Error("Access was denied")
+	}
+
+	r.Allow = []string{"testgroup"}
+	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) == accessAllow {
+		t.Error("Access was allowed")
+	}
+}
+
 func TestInvertedRegexMatcher(t *testing.T) {
 	fields := map[string]string{
 		"field_a": "expected",
