@@ -103,6 +103,22 @@ providers:
       # Optional, defaults to false
       allow_insecure: false
 
+  # Authentication through OAuth2 workflow with OpenID Connect provider
+  # Supports: Users
+  oidc:
+    client_id: ""
+    client_secret: ""
+    # Optional, defaults to "OpenID Connect"
+    issuer_name: ""
+    issuer_url: ""
+    redirect_url: "https://login.luifer.io/login"
+
+    # Optional, defaults to no limitations
+    require_domain: "example.com"
+    # Optional, defaults to "subject"
+    user_id_method: "full-email"
+
+
   # Authentication against embedded user database
   # Supports: Users, Groups, MFA
   simple:
