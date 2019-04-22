@@ -122,10 +122,9 @@
             var res = []
 
             for (name in this.available_methods) {
-              res.push({
-                name,
-                label: this.login.names[name],
-              })
+              if (this.login.names[name]) {
+                res.push({ name, label: this.login.names[name] })
+              }
             }
 
             res.sort(function(i, j) { return sortOrder(i.name, j.name) })
