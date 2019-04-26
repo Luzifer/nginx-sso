@@ -1,3 +1,7 @@
+# 0.21.1 / 2019-04-26
+
+  * Fix: Use cookie for redirects after oAuth flow
+
 # 0.21.0 / 2019-04-23
 
   * [#35] Implement OpenID Connect auth provider
