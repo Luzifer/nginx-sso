@@ -3,15 +3,24 @@ package main
 import (
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/pkg/errors"
 )
 
 func getRedirectURL(r *http.Request, fallback string) (string, error) {
 	var (
-		redirURL string
 		params   url.Values
+		redirURL string
+		sessURL  string
 	)
+
+	if cookieStore != nil {
+		sess, _ := cookieStore.Get(r, strings.Join([]string{mainCfg.Cookie.Prefix, "main"}, "-"))
+		if s, ok := sess.Values["go"].(string); ok {
+			sessURL = s
+		}
+	}
 
 	switch {
 	case r.URL.Query().Get("go") != "":
@@ -23,6 +32,10 @@ func getRedirectURL(r *http.Request, fallback string) (string, error) {
 		// We have a POST request, use "go" form value
 		redirURL = r.FormValue("go")
 		params = url.Values{} // No need to read other form fields
+
+	case sessURL != "":
+		redirURL = sessURL
+		params = url.Values{}
 
 	default:
 		// No URL specified, use specified fallback URL
