@@ -1,3 +1,7 @@
+# 0.21.2 / 2019-05-13
+
+  * Fix: Google not returning refresh tokens
+
 # 0.21.1 / 2019-04-26
 
   * Fix: Use cookie for redirects after oAuth flow
