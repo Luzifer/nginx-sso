@@ -162,7 +162,11 @@ func (a *AuthGoogleOAuth) Login(res http.ResponseWriter, r *http.Request) (user 
 // method. If no login using this method is possible the function
 // needs to return nil.
 func (a *AuthGoogleOAuth) LoginFields() (fields []plugins.LoginField) {
-	loginURL := a.getOAuthConfig().AuthCodeURL(a.AuthenticatorID(), oauth2.AccessTypeOffline)
+	loginURL := a.getOAuthConfig().AuthCodeURL(
+		a.AuthenticatorID(),
+		oauth2.AccessTypeOffline,
+		oauth2.SetAuthURLParam("prompt", "consent"),
+	)
 
 	return []plugins.LoginField{
 		{
