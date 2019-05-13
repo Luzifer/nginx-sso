@@ -1,3 +1,7 @@
+# 0.21.3 / 2019-05-14
+
+  * Fix: Even with offline access no refresh token is present
+
 # 0.21.2 / 2019-05-13
 
   * Fix: Google not returning refresh tokens
