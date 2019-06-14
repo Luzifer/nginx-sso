@@ -14,11 +14,11 @@ import (
 )
 
 func registerModules() {
+	registerAuthenticator(simple.New(cookieStore))
 	registerAuthenticator(crowd.New())
 	registerAuthenticator(ldap.New(cookieStore))
 	registerAuthenticator(google.New(cookieStore))
 	registerAuthenticator(oidc.New(cookieStore))
-	registerAuthenticator(simple.New(cookieStore))
 	registerAuthenticator(token.New())
 	registerAuthenticator(auth_yubikey.New(cookieStore))
 
