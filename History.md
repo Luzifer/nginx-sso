@@ -1,3 +1,7 @@
+# 0.21.4 / 2019-06-15
+
+  * Prefer simple authenticator over LDAP (#42)
+
 # 0.21.3 / 2019-05-14
 
   * Fix: Even with offline access no refresh token is present
