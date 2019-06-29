@@ -62,6 +62,8 @@ func (a *AuthLDAP) Configure(yamlSource []byte) error {
 		} `yaml:"providers"`
 	}{}
 
+	envelope.Cookie = plugins.DefaultCookieConfig()
+
 	if err := yaml.Unmarshal(yamlSource, &envelope); err != nil {
 		return err
 	}

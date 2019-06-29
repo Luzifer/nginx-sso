@@ -19,3 +19,10 @@ func (c CookieConfig) GetSessionOpts() *sessions.Options {
 		HttpOnly: true,
 	}
 }
+
+func DefaultCookieConfig() CookieConfig {
+	return CookieConfig{
+		Prefix: "nginx-sso",
+		Expire: 3600,
+	}
+}
