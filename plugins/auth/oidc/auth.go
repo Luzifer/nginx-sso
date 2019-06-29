@@ -67,6 +67,8 @@ func (a *AuthOIDC) Configure(yamlSource []byte) (err error) {
 		} `yaml:"providers"`
 	}{}
 
+	envelope.Cookie = plugins.DefaultCookieConfig()
+
 	if err := yaml.Unmarshal(yamlSource, &envelope); err != nil {
 		return err
 	}

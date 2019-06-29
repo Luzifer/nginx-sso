@@ -73,8 +73,7 @@ func init() {
 	}
 
 	// Set sane defaults for main configuration
-	mainCfg.Cookie.Prefix = "nginx-sso"
-	mainCfg.Cookie.Expire = 3600
+	mainCfg.Cookie = plugins.DefaultCookieConfig()
 	mainCfg.Listen.Addr = "127.0.0.1"
 	mainCfg.Listen.Port = 8082
 	mainCfg.Login.DefaultRedirect = "debug"
