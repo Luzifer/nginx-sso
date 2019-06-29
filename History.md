@@ -1,3 +1,7 @@
+# 0.21.5 / 2019-06-29
+
+  * [#41] Set default cookie values in all providers (#45)
+
 # 0.21.4 / 2019-06-15
 
   * Prefer simple authenticator over LDAP (#42)
