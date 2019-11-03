@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Luzifer/go_helpers/str"
+	"github.com/Luzifer/go_helpers/v2/str"
 )
 
 type aclRule struct {

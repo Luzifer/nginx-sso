@@ -19,7 +19,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Luzifer/nginx-sso/plugins"
-	"github.com/Luzifer/rconfig"
+	"github.com/Luzifer/rconfig/v2"
 )
 
 type mainConfig struct {

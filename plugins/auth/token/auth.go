@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Luzifer/go_helpers/str"
+	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/nginx-sso/plugins"
 
 	yaml "gopkg.in/yaml.v2"

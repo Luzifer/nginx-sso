@@ -9,7 +9,9 @@ RUN set -ex \
  && apk add --update \
       build-base \
       git \
- && go install -ldflags "-X main.version=$(git describe --tags || git rev-parse --short HEAD || echo dev)"
+ && go install \
+      -ldflags "-X main.version=$(git describe --tags || git rev-parse --short HEAD || echo dev)" \
+      -mod=vendor
 
 FROM alpine:3.8
 
