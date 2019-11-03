@@ -224,6 +224,10 @@ func (a *AuthOIDC) getOAuthConfig() *oauth2.Config {
 func (a *AuthOIDC) getUserFromToken(ctx context.Context, token *oauth2.Token) (string, error) {
 	ui, err := a.provider.UserInfo(ctx, oauth2.StaticTokenSource(token))
 	if err != nil {
+		if strings.Contains(err.Error(), "401 Unauthorized") {
+			// Handle Unauthorized as no user found instead of generic error
+			return "", plugins.ErrNoValidUserFound
+		}
 		return "", errors.Wrap(err, "Unable to fetch user info")
 	}
 
