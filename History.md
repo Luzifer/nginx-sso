@@ -1,3 +1,10 @@
+# 0.22.0 / 2019-11-03
+
+  * Switch to Go1.12+ vendoring
+  * Fix: Broken HTML tag
+  * Fix: Handle Unauthorized as no user found instead of generic error
+  * Update vendored libraries
+
 # 0.21.5 / 2019-06-29
 
   * [#41] Set default cookie values in all providers (#45)
