@@ -39,6 +39,27 @@ if ok {
 }
 ```
 
+**Use your own HTTP Client with fine-tuned config:**
+While the library works out of the box, it's not recommended to use the default http client.
+It is better to configure your own http client with useful timeouts.
+
+For example:
+```go
+yubigo.HTTPClient = &http.Client{
+    Timeout: time.Second * 15,
+    Transport: &http.Transport{
+        MaxConnsPerHost:     20,
+        MaxIdleConnsPerHost: 5,
+        DialContext: (&net.Dialer{
+            Timeout:   30 * time.Second,
+            KeepAlive: 60 * time.Second,
+        }).DialContext,
+        TLSHandshakeTimeout:   10 * time.Second,
+        ResponseHeaderTimeout: 10 * time.Second,
+        ExpectContinueTimeout: 1 * time.Second,
+    },
+}
+```
 
 **Do not verify HTTPS certificate:**
 ```go

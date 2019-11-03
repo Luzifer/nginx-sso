@@ -31,7 +31,7 @@ Let's start with an example that shows the sessions API in a nutshell:
 	// environmental variable, or flag (or both), and don't accidentally commit it
 	// alongside your code. Ensure your key is sufficiently random - i.e. use Go's
 	// crypto/rand or securecookie.GenerateRandomKey(32) and persist the result.
-	var store = sessions.NewCookieStore(os.Getenv("SESSION_KEY"))
+	var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 
 	func MyHandler(w http.ResponseWriter, r *http.Request) {
 		// Get a session. We're ignoring the error resulted from decoding an
@@ -51,20 +51,8 @@ secret key used to authenticate the session. Inside the handler, we call
 some session values in session.Values, which is a `map[interface{}]interface{}`.
 And finally we call `session.Save()` to save the session in the response.
 
-Important Note: If you aren't using gorilla/mux, you need to wrap your handlers
-with
-[`context.ClearHandler`](http://www.gorillatoolkit.org/pkg/context#ClearHandler)
-or else you will leak memory! An easy way to do this is to wrap the top-level
-mux when calling http.ListenAndServe:
-
-```go
-	http.ListenAndServe(":8080", context.ClearHandler(http.DefaultServeMux))
-```
-
-The ClearHandler function is provided by the gorilla/context package.
-
 More examples are available [on the Gorilla
-website](http://www.gorillatoolkit.org/pkg/sessions).
+website](https://www.gorillatoolkit.org/pkg/sessions).
 
 ## Store Implementations
 

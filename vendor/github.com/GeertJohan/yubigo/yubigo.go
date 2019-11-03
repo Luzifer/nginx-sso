@@ -2,6 +2,7 @@ package yubigo
 
 import (
 	"bufio"
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/tls"
@@ -30,9 +31,9 @@ var (
 	signatureUrlFix = regexp.MustCompile(`\+`)
 )
 
-// Package variable used to override the http client used for communication 
+// Package variable used to override the http client used for communication
 // with Yubico. If nil the standard http.Client will be used - if overriding
-// you need to ensure the transport options are set. 
+// you need to ensure the transport options are set.
 var HTTPClient *http.Client = nil
 
 // Parse and verify the given OTP string into prefix (identity) and ciphertext.
@@ -82,6 +83,7 @@ type verifyWorker struct {
 }
 
 type workRequest struct {
+	ctx context.Context
 	paramString *string
 	resultChan  chan *workResult
 }
@@ -117,13 +119,19 @@ func (vw *verifyWorker) process() {
 				}
 				continue
 			}
+
 			request.Header.Add("User-Agent", "github.com/GeertJohan/yubigo")
 
-			// Call server
+			// Call server with cancel context
+			request = request.WithContext(w.ctx)
 			response, err := vw.client.Do(request)
 
 			// If we received an error from the client, return that (wrapped) on the channel.
 			if err != nil {
+				// skip cancellation errors
+				if w.ctx.Err() == context.Canceled {
+					continue
+				}
 				w.resultChan <- &workResult{
 					response:     nil,
 					requestQuery: url,
@@ -227,8 +235,8 @@ func (ya *YubiAuth) buildWorkers() {
 	for id, apiServer := range ya.apiServerList {
 		// create worker instance with new http.Client instance
 		worker := &verifyWorker{
-			ya: ya,
-			id: id,
+			ya:        ya,
+			id:        id,
 			apiServer: apiServer + "?",
 			work:      make(chan *workRequest),
 			stop:      make(chan bool),
@@ -252,7 +260,7 @@ func (ya *YubiAuth) buildWorkers() {
 }
 
 // Use this method to specify a list of servers for verification.
-// Each server string should contain host + path. 
+// Each server string should contain host + path.
 // Example: "api.yubico.com/wsapi/2.0/verify".
 func (ya *YubiAuth) SetApiServerList(urls ...string) {
 	// Lock
@@ -365,8 +373,12 @@ func (ya *YubiAuth) Verify(otp string) (yr *YubiResponse, ok bool, err error) {
 	// create result channel, buffersize equals the amount of workers.
 	resultChan := make(chan *workResult, len(ya.workers))
 
+	// create a cancel context to cancel http requests while we already have a good result
+	ctx, cancel := context.WithCancel(context.Background())
+
 	// create workRequest instance
 	wr := &workRequest{
+		ctx:ctx,
 		paramString: &paramString,
 		resultChan:  resultChan,
 	}
@@ -417,7 +429,7 @@ func (ya *YubiAuth) Verify(otp string) (yr *YubiResponse, ok bool, err error) {
 			// The result status is "REPLAYED_REQUEST".
 			// This means that the server for this request got sync with an other server before our request.
 			// Lets wait for the result from the other server.
-			// See: http://forum.yubico.com/viewtopic.php?f=3&t=701
+			// See: https://forum.yubico.com/viewtopic.php?f=3&t=701
 
 			// increment error counter
 			errCount++
@@ -435,6 +447,9 @@ func (ya *YubiAuth) Verify(otp string) (yr *YubiResponse, ok bool, err error) {
 			// We have a replayed request, but not all workers responded yet, so lets wait for the next result.
 			continue
 		}
+
+		// we have a result that satisfies us so we can cancel the other clients
+		cancel()
 
 		// No error or REPLAYED_REQUEST. Seems like we have a proper result.
 		break
