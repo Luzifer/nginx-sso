@@ -77,9 +77,44 @@ func TestGroupAuthenticated(t *testing.T) {
 		t.Error("Access was denied")
 	}
 
+	if r.HasAccess("\x00", nil, aclTestRequest(fields)) == accessAllow {
+		t.Error("Access was allowed to unauth-user")
+	}
+
+	if r.HasAccess("", nil, aclTestRequest(fields)) == accessAllow {
+		t.Error("Access was allowed to empty user")
+	}
+
 	r.Allow = []string{"testgroup"}
 	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) == accessAllow {
 		t.Error("Access was allowed")
+	}
+}
+
+func TestAnonymousAccess(t *testing.T) {
+	r := aclRuleSet{
+		Rules: []aclRule{
+			{
+				Field:       "field_a",
+				MatchString: aclTestString("expected"),
+			},
+		},
+		Allow: []string{groupAnonymous},
+	}
+	fields := map[string]string{
+		"field_a": "expected",
+	}
+
+	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) != accessAllow {
+		t.Error("Access was denied")
+	}
+
+	if r.HasAccess("", nil, aclTestRequest(fields)) != accessAllow {
+		t.Error("Access without user was denied")
+	}
+
+	if r.HasAccess("\x00", nil, aclTestRequest(fields)) != accessAllow {
+		t.Error("Access with special unauth-user was denied")
 	}
 }
 
