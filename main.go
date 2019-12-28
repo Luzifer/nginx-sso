@@ -153,6 +153,14 @@ func handleAuthRequest(res http.ResponseWriter, r *http.Request) {
 
 	switch err {
 	case plugins.ErrNoValidUserFound:
+		// No valid user found, check whether special anonymous "user" has access
+		// Username is set to 0x0 character to prevent accidential whitelist-match
+		if mainCfg.ACL.HasAccess(string(0x0), nil, r) {
+			mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "anonymous access granted"}) // #nosec G104 - This is only logging
+			res.WriteHeader(http.StatusOK)
+			return
+		}
+
 		mainCfg.AuditLog.Log(auditEventValidate, r, map[string]string{"result": "no valid user found"}) // #nosec G104 - This is only logging
 		http.Error(res, "No valid user found", http.StatusUnauthorized)
 

@@ -14,12 +14,17 @@ import (
 )
 
 func registerModules() {
+	// Start with very simple, local auth providers as they are cheap
+	// in their execution and therefore if they are used nginx-sso
+	// can process far more requests than through the other providers
 	registerAuthenticator(simple.New(cookieStore))
+	registerAuthenticator(token.New())
+
+	// Afterwards utilize the more expensive remove providers
 	registerAuthenticator(crowd.New())
 	registerAuthenticator(ldap.New(cookieStore))
 	registerAuthenticator(google.New(cookieStore))
 	registerAuthenticator(oidc.New(cookieStore))
-	registerAuthenticator(token.New())
 	registerAuthenticator(auth_yubikey.New(cookieStore))
 
 	registerMFAProvider(duo.New())

@@ -9,6 +9,8 @@ import (
 	"github.com/Luzifer/go_helpers/v2/str"
 )
 
+const groupAnonymous = "@_anonymous"
+
 type aclRule struct {
 	Field       string  `yaml:"field"`
 	Invert      bool    `yaml:"invert"`
@@ -148,7 +150,12 @@ func (a aclRuleSet) HasAccess(user string, groups []string, r *http.Request) acl
 		}
 	}
 
-	if str.StringInSlice("@_authenticated", a.Allow) && user != "" {
+	// Allow special group @_authenticated if any non-anonymous user is set
+	if str.StringInSlice("@_authenticated", a.Allow) && !str.StringInSlice(user, []string{"", "\x00"}) {
+		return accessAllow
+	}
+
+	if str.StringInSlice(groupAnonymous, a.Allow) {
 		return accessAllow
 	}
 
