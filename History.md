@@ -1,3 +1,7 @@
+# 0.23.0 / 2019-12-28
+
+  * Allow to configure anonymous access (#48)
+
 # 0.22.0 / 2019-11-03
 
   * Switch to Go1.12+ vendoring
