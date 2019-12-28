@@ -24,7 +24,7 @@ const (
 	userIDMethodSubject   = "subject"
 )
 
-var http4xxErrorResponse = regexp.MustCompile(`^(4[0-9]{2}): (.*)`)
+var http4xxErrorResponse = regexp.MustCompile(`^(4[0-9]{2}) (.*)`)
 
 type AuthOIDC struct {
 	ClientID     string `yaml:"client_id"`
