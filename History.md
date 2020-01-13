@@ -1,3 +1,7 @@
+# 0.24.0 / 2020-01-13
+
+  * [#50] Handle all 4xx errors as "user not found" (#52)
+
 # 0.23.0 / 2019-12-28
 
   * Allow to configure anonymous access (#48)
