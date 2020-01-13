@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"golang.org/x/oauth2"
@@ -22,6 +23,8 @@ const (
 	userIDMethodLocalPart = "local-part"
 	userIDMethodSubject   = "subject"
 )
+
+var http4xxErrorResponse = regexp.MustCompile(`^(4[0-9]{2}) (.*)`)
 
 type AuthOIDC struct {
 	ClientID     string `yaml:"client_id"`
@@ -224,10 +227,20 @@ func (a *AuthOIDC) getOAuthConfig() *oauth2.Config {
 func (a *AuthOIDC) getUserFromToken(ctx context.Context, token *oauth2.Token) (string, error) {
 	ui, err := a.provider.UserInfo(ctx, oauth2.StaticTokenSource(token))
 	if err != nil {
-		if strings.Contains(err.Error(), "401 Unauthorized") {
-			// Handle Unauthorized as no user found instead of generic error
+		if http4xxErrorResponse.MatchString(err.Error()) {
+			/*
+			 * Server answered with any 4xx error
+			 *
+			 * Google OIDC: 401 Unauthorized => Token expired
+			 * Wordpress OIDC plugin: 400 Bad Request => Token expired
+			 *
+			 * As long as they can't agree on ONE status for that we need to
+			 * handle all 4xx as "token expired" and therefore "no valid user"
+			 */
 			return "", plugins.ErrNoValidUserFound
 		}
+
+		// Other error: Report the error
 		return "", errors.Wrap(err, "Unable to fetch user info")
 	}
 
