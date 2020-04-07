@@ -216,7 +216,7 @@ func (a *AuthGoogleOAuth) getUserFromToken(ctx context.Context, token *oauth2.To
 	httpClient := conf.Client(ctx, token)
 	client, err := v2.NewService(ctx, option.WithHTTPClient(httpClient))
 	if err != nil {
-		return "", errors.Wrap(err, "Unable to instanciate OAuth2 API service")
+		return "", errors.Wrap(err, "Unable to instantiate OAuth2 API service")
 	}
 
 	tok, err := client.Tokeninfo().Context(ctx).Do()

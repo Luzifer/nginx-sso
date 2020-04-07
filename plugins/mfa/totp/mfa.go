@@ -93,7 +93,7 @@ func (m MFATOTP) exec(c plugins.MFAConfig) (string, error) {
 	}
 
 	if n := len(secret) % 8; n != 0 {
-		secret = secret + strings.Repeat("=", 8-n)
+		secret += strings.Repeat("=", 8-n)
 	}
 
 	return totp.GenerateCodeCustom(strings.ToUpper(secret), time.Now(), generatorOpts)
