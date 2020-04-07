@@ -144,9 +144,10 @@ func main() {
 		case syscall.SIGHUP:
 			if yamlSource, err = loadConfiguration(); err != nil {
 				log.WithError(err).Error("Unable to reload configuration")
-			}
-			if err = initializeModules(yamlSource); err != nil {
-				log.WithError(err).Fatal("Unable to initialize modules")
+			} else {
+				if err = initializeModules(yamlSource); err != nil {
+					log.WithError(err).Error("Unable to initialize modules")
+				}
 			}
 
 		default:
