@@ -84,17 +84,17 @@ func init() {
 func loadConfiguration() ([]byte, error) {
 	yamlSource, err := ioutil.ReadFile(cfg.ConfigFile)
 	if err != nil {
-		return []byte(""), fmt.Errorf("Unable to read configuration file: %s", err)
+		return nil, errors.Wrap(err, "Unable to read configuration file")
 	}
 
 	if err = yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
-		return []byte(""), fmt.Errorf("Unable to load configuration file: %s", err)
+		return nil, errors.Wrap(err, "Unable to load configuration file")
 	}
 
 	return yamlSource, nil
 }
 
-func loadModules(yamlSource []byte) error {
+func initializeModules(yamlSource []byte) error {
 	if mainCfg.Plugins.Directory != "" {
 		if err := loadPlugins(mainCfg.Plugins.Directory); err != nil {
 			return errors.Wrap(err, "Unable to load plugins")
@@ -121,8 +121,8 @@ func main() {
 	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
 	registerModules()
 
-	if err := loadModules(yamlSource); err != nil {
-		log.WithError(err).Fatal("Unable to load modules")
+	if err = initializeModules(yamlSource); err != nil {
+		log.WithError(err).Fatal("Unable to initialize modules")
 	}
 
 	http.HandleFunc("/", handleRootRequest)
@@ -142,8 +142,11 @@ func main() {
 	for sig := range sigChan {
 		switch sig {
 		case syscall.SIGHUP:
-			if _, err := loadConfiguration(); err != nil {
+			if yamlSource, err = loadConfiguration(); err != nil {
 				log.WithError(err).Error("Unable to reload configuration")
+			}
+			if err = initializeModules(yamlSource); err != nil {
+				log.WithError(err).Fatal("Unable to initialize modules")
 			}
 
 		default:
