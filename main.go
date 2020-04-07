@@ -81,27 +81,31 @@ func init() {
 	mainCfg.AuditLog.Headers = []string{"x-origin-uri"}
 }
 
-func loadConfiguration() error {
+func loadConfiguration() ([]byte, error) {
 	yamlSource, err := ioutil.ReadFile(cfg.ConfigFile)
 	if err != nil {
-		return fmt.Errorf("Unable to read configuration file: %s", err)
+		return []byte(""), fmt.Errorf("Unable to read configuration file: %s", err)
 	}
 
 	if err = yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
-		return fmt.Errorf("Unable to load configuration file: %s", err)
+		return []byte(""), fmt.Errorf("Unable to load configuration file: %s", err)
 	}
 
+	return yamlSource, nil
+}
+
+func loadModules(yamlSource []byte) error {
 	if mainCfg.Plugins.Directory != "" {
-		if err = loadPlugins(mainCfg.Plugins.Directory); err != nil {
+		if err := loadPlugins(mainCfg.Plugins.Directory); err != nil {
 			return errors.Wrap(err, "Unable to load plugins")
 		}
 	}
 
-	if err = initializeAuthenticators(yamlSource); err != nil {
+	if err := initializeAuthenticators(yamlSource); err != nil {
 		return fmt.Errorf("Unable to configure authentication: %s", err)
 	}
 
-	if err = initializeMFAProviders(yamlSource); err != nil {
+	if err := initializeMFAProviders(yamlSource); err != nil {
 		log.WithError(err).Fatal("Unable to configure MFA providers")
 	}
 
@@ -109,11 +113,16 @@ func loadConfiguration() error {
 }
 
 func main() {
+	yamlSource, err := loadConfiguration()
+	if err != nil {
+		log.WithError(err).Fatal("Unable to load configuration")
+	}
+
 	cookieStore = sessions.NewCookieStore([]byte(mainCfg.Cookie.AuthKey))
 	registerModules()
 
-	if err := loadConfiguration(); err != nil {
-		log.WithError(err).Fatal("Unable to load configuration")
+	if err := loadModules(yamlSource); err != nil {
+		log.WithError(err).Fatal("Unable to load modules")
 	}
 
 	http.HandleFunc("/", handleRootRequest)
@@ -133,7 +142,7 @@ func main() {
 	for sig := range sigChan {
 		switch sig {
 		case syscall.SIGHUP:
-			if err := loadConfiguration(); err != nil {
+			if _, err := loadConfiguration(); err != nil {
 				log.WithError(err).Error("Unable to reload configuration")
 			}
 
