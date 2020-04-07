@@ -1,3 +1,8 @@
+# 0.24.1 / 2020-04-08
+
+  * Lint: Fix some minor linter errors
+  * Fix: Config loading after CookieStore init (#58)
+
 # 0.24.0 / 2020-01-13
 
   * [#50] Handle all 4xx errors as "user not found" (#52)
