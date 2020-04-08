@@ -45,6 +45,7 @@ type mainConfig struct {
 var (
 	cfg = struct {
 		ConfigFile     string `flag:"config,c" default:"config.yaml" env:"CONFIG" description:"Location of the configuration file"`
+		AuthKey        string `flag:"authkey" env:"COOKIE_AUTHENTICATION_KEY" description:"Cookie authentication key"`
 		LogLevel       string `flag:"log-level" default:"info" description:"Level of logs to display (debug, info, warn, error)"`
 		TemplateDir    string `flag:"frontend-dir" default:"./frontend/" env:"FRONTEND_DIR" description:"Location of the directory containing the web assets"`
 		VersionAndExit bool   `flag:"version" default:"false" description:"Prints current version and exits"`
@@ -89,6 +90,10 @@ func loadConfiguration() ([]byte, error) {
 
 	if err = yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
 		return nil, errors.Wrap(err, "Unable to load configuration file")
+	}
+
+	if cfg.AuthKey != "" {
+		mainCfg.Cookie.AuthKey = cfg.AuthKey
 	}
 
 	return yamlSource, nil
