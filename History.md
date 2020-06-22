@@ -1,3 +1,8 @@
+# 0.25.0 / 2020-06-22
+
+  * [#62] Add support for multiple domain requirements (#63)
+  * Add cookie auth key environment variable (#59)
+
 # 0.24.1 / 2020-04-08
 
   * Lint: Fix some minor linter errors
