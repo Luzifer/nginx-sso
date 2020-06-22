@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/pkg/errors"
 
+	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
@@ -30,8 +31,9 @@ type AuthGoogleOAuth struct {
 	ClientSecret string `yaml:"client_secret"`
 	RedirectURL  string `yaml:"redirect_url"`
 
-	RequireDomain string `yaml:"require_domain"`
-	UserIDMethod  string `yaml:"user_id_method"`
+	RequireDomain  string   `yaml:"require_domain"` // Deprecated: Use RequireDomains
+	RequireDomains []string `yaml:"require_domains"`
+	UserIDMethod   string   `yaml:"user_id_method"`
 
 	cookie      plugins.CookieConfig
 	cookieStore *sessions.CookieStore
@@ -77,7 +79,15 @@ func (a *AuthGoogleOAuth) Configure(yamlSource []byte) (err error) {
 	a.ClientID = envelope.Providers.GoogleOAuth.ClientID
 	a.ClientSecret = envelope.Providers.GoogleOAuth.ClientSecret
 	a.RedirectURL = envelope.Providers.GoogleOAuth.RedirectURL
-	a.RequireDomain = envelope.Providers.GoogleOAuth.RequireDomain
+	a.RequireDomains = envelope.Providers.GoogleOAuth.RequireDomains
+
+	if len(envelope.Providers.GoogleOAuth.RequireDomain) > 0 {
+		// Migration for old configuration with only single require_domain
+		a.RequireDomains = append(
+			a.RequireDomains,
+			envelope.Providers.GoogleOAuth.RequireDomain,
+		)
+	}
 
 	if envelope.Providers.GoogleOAuth.UserIDMethod != "" {
 		a.UserIDMethod = envelope.Providers.GoogleOAuth.UserIDMethod
@@ -224,7 +234,12 @@ func (a *AuthGoogleOAuth) getUserFromToken(ctx context.Context, token *oauth2.To
 		return "", errors.Wrap(err, "Unable to fetch token-info")
 	}
 
-	if a.RequireDomain != "" && !strings.HasSuffix(tok.Email, "@"+a.RequireDomain) {
+	var mailParts = strings.Split(tok.Email, "@")
+	if len(mailParts) != 2 {
+		return "", errors.New("Invalid email returned")
+	}
+
+	if len(a.RequireDomains) > 0 && !str.StringInSlice(mailParts[1], a.RequireDomains) {
 		// E-Mail domain is enforced, ignore all other users
 		return "", plugins.ErrNoValidUserFound
 	}
