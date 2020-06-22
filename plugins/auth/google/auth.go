@@ -31,7 +31,7 @@ type AuthGoogleOAuth struct {
 	ClientSecret string `yaml:"client_secret"`
 	RedirectURL  string `yaml:"redirect_url"`
 
-	RequireDomain  string   `yaml:"require_domain"`
+	RequireDomain  string   `yaml:"require_domain"` // Deprecated: Use RequireDomains
 	RequireDomains []string `yaml:"require_domains"`
 	UserIDMethod   string   `yaml:"user_id_method"`
 
@@ -235,7 +235,7 @@ func (a *AuthGoogleOAuth) getUserFromToken(ctx context.Context, token *oauth2.To
 	}
 
 	var mailParts = strings.Split(tok.Email, "@")
-	if len(mailParts) < 2 {
+	if len(mailParts) != 2 {
 		return "", errors.New("Invalid email returned")
 	}
 
