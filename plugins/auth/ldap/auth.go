@@ -35,6 +35,7 @@ type AuthLDAP struct {
 		ValidateHostname string `yaml:"validate_hostname"`
 		AllowInsecure    bool   `yaml:"allow_insecure"`
 	} `yaml:"tls_config"`
+	MFA		[]plugins.MFAConfig `yaml:"mfa"`
 
 	cookie      plugins.CookieConfig
 	cookieStore *sessions.CookieStore
@@ -83,6 +84,7 @@ func (a *AuthLDAP) Configure(yamlSource []byte) error {
 	a.UserSearchFilter = envelope.Providers.LDAP.UserSearchFilter
 	a.UsernameAttribute = envelope.Providers.LDAP.UsernameAttribute
 	a.TLSConfig = envelope.Providers.LDAP.TLSConfig
+	a.MFA = envelope.Providers.LDAP.MFA
 
 	a.cookie = envelope.Cookie
 
@@ -179,7 +181,7 @@ func (a AuthLDAP) Login(res http.ResponseWriter, r *http.Request) (string, []plu
 	sess.Options = a.cookie.GetSessionOpts()
 	sess.Values["user"] = userDN
 	sess.Values["alias"] = alias
-	return userDN, nil, sess.Save(r, res)
+	return alias, a.MFA, sess.Save(r, res)
 }
 
 // LoginFields needs to return the fields required for this login
@@ -355,4 +357,4 @@ func (a AuthLDAP) getUserGroups(userDN, alias string) ([]string, error) {
 // configuration return true. If this is true the login interface
 // will display an additional field for this provider for the user
 // to fill in their MFA token.
-func (a AuthLDAP) SupportsMFA() bool { return false } // TODO: Implement
+func (a AuthLDAP) SupportsMFA() bool { return true } // TODO: Implement
