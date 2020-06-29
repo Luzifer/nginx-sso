@@ -11,9 +11,9 @@ RUN set -ex \
       git \
  && go install \
       -ldflags "-X main.version=$(git describe --tags || git rev-parse --short HEAD || echo dev)" \
-      -mod=vendor
+      -mod=readonly
 
-FROM alpine:3.8
+FROM alpine
 
 LABEL maintainer "Knut Ahlers <knut@ahlers.me>"
 
