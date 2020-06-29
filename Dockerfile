@@ -22,7 +22,7 @@ RUN set -ex \
       bash \
       ca-certificates \
       curl \
- && curl -sSfLo /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64 \
+ && curl -sSfLo /usr/local/bin/dumb-init "https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64" \
  && chmod +x /usr/local/bin/dumb-init \
  && apk --no-cache del --purge \
       curl
