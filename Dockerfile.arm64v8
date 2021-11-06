@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM arm64v8/golang:alpine as builder
 
 ADD . /go/src/github.com/Luzifer/nginx-sso
 WORKDIR /go/src/github.com/Luzifer/nginx-sso
