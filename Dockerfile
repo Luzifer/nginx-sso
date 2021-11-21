@@ -3,11 +3,10 @@ FROM golang:alpine as builder
 ADD . /go/src/github.com/Luzifer/nginx-sso
 WORKDIR /go/src/github.com/Luzifer/nginx-sso
 
-ENV CGO_ENABLED=1
+ENV CGO_ENABLED=0
 
 RUN set -ex \
  && apk add --update \
-      build-base \
       git \
  && go install \
       -ldflags "-X main.version=$(git describe --tags || git rev-parse --short HEAD || echo dev)" \
@@ -21,11 +20,7 @@ RUN set -ex \
  && apk --no-cache add \
       bash \
       ca-certificates \
-      curl \
- && curl -sSfLo /usr/local/bin/dumb-init "https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64" \
- && chmod +x /usr/local/bin/dumb-init \
- && apk --no-cache del --purge \
-      curl
+      dumb-init
 
 COPY --from=builder /go/bin/nginx-sso                                     /usr/local/bin/
 COPY --from=builder /go/src/github.com/Luzifer/nginx-sso/config.yaml      /usr/local/share/nginx-sso/
