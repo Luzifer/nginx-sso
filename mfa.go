@@ -11,10 +11,11 @@ import (
 )
 
 var mfaLoginField = plugins.LoginField{
-	Label:       "MFA Token",
-	Name:        plugins.MFALoginFieldName,
-	Placeholder: "(optional)",
-	Type:        "text",
+	Label:         "MFA Token",
+	Name:          plugins.MFALoginFieldName,
+	Placeholder:   "(optional)",
+	Type:          "text",
+	autocomplete:  "one-time-code",
 }
 
 var (
