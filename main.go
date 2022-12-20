@@ -133,6 +133,7 @@ func main() {
 	http.HandleFunc("/", handleRootRequest)
 	http.HandleFunc("/auth", handleAuthRequest)
 	http.HandleFunc("/debug", handleLoginDebug)
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
 	http.HandleFunc("/login", handleLoginRequest)
 	http.HandleFunc("/logout", handleLogoutRequest)
 
