@@ -4,6 +4,7 @@ image: "reporunner/golang-alpine"
 checkout_dir: /go/src/github.com/Luzifer/nginx-sso
 
 commands:
+  - apk --no-cache add zip
   - make publish
 
 environment:
