@@ -1,3 +1,13 @@
+# 0.26.0 / 2022-12-21
+
+  * Add health-endpoint, fix copy on empty dir
+  * [#65] Provide Dockerfile for arm64v8 architecture (#66)
+  * Update dumb-init
+  * Switch Dockerfile to readonly modules and recent alpine
+  * Fix: Compiler refuses to convert 0x0 to string
+  * [ci] Fix missing utils
+  * Remove vendored libraries
+
 # 0.25.0 / 2020-06-22
 
   * [#62] Add support for multiple domain requirements (#63)
