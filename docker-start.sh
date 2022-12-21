@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Copy frontend if not available
-[ -d /data/frontend/index.html ] || cp -r /usr/local/share/nginx-sso/frontend /data/frontend
+[ -d /data/frontend/index.html ] || cp -r /usr/local/share/nginx-sso/frontend /data/
 
 [ -e /data/config.yaml ] || {
   cp /usr/local/share/nginx-sso/config.yaml /data/config.yaml
