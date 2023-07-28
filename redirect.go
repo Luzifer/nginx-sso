@@ -10,9 +10,10 @@ import (
 
 func getRedirectURL(r *http.Request, fallback string) (string, error) {
 	var (
-		params   url.Values
-		redirURL string
-		sessURL  string
+		params      url.Values
+		redirURL    string
+		removeParam string
+		sessURL     string
 	)
 
 	if cookieStore != nil {
@@ -23,9 +24,16 @@ func getRedirectURL(r *http.Request, fallback string) (string, error) {
 	}
 
 	switch {
+	case r.URL.Query().Get("rd") != "":
+		// We have a GET request with a "rd" query param (K8s ingress-nginx)
+		redirURL = r.URL.Query().Get("rd")
+		removeParam = "rd"
+		params = r.URL.Query()
+
 	case r.URL.Query().Get("go") != "":
 		// We have a GET request, use "go" query param
 		redirURL = r.URL.Query().Get("go")
+		removeParam = "go"
 		params = r.URL.Query()
 
 	case r.FormValue("go") != "":
@@ -42,13 +50,15 @@ func getRedirectURL(r *http.Request, fallback string) (string, error) {
 		return fallback, nil
 	}
 
-	// Remove the "go" parameter as it is a parameter for nginx-sso
-	params.Del("go")
+	// Remove the redirect parameter as it is a parameter for nginx-sso
+	if removeParam != "" {
+		params.Del(removeParam)
+	}
 
 	// Parse given URL to extract attached parameters
 	pURL, err := url.Parse(redirURL)
 	if err != nil {
-		return "", errors.Wrap(err, "Unable to parse redirect URL")
+		return "", errors.Wrap(err, "parsing redirect URL")
 	}
 
 	// Transfer parameters from URL to params set
