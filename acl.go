@@ -9,34 +9,145 @@ import (
 	"github.com/Luzifer/go_helpers/v2/str"
 )
 
-const groupAnonymous = "@_anonymous"
+const (
+	groupAnonymous     = "@_anonymous"
+	groupAuthenticated = "@_authenticated"
+)
 
-type aclRule struct {
-	Field       string  `yaml:"field"`
-	Invert      bool    `yaml:"invert"`
-	IsPresent   *bool   `yaml:"present"`
-	MatchRegex  *string `yaml:"regexp"`
-	MatchString *string `yaml:"equals"`
+type (
+	acl struct {
+		RuleSets []aclRuleSet `yaml:"rule_sets"`
+	}
+
+	aclRule struct {
+		Field       string  `yaml:"field"`
+		Invert      bool    `yaml:"invert"`
+		IsPresent   *bool   `yaml:"present"`
+		MatchRegex  *string `yaml:"regexp"`
+		MatchString *string `yaml:"equals"`
+	}
+
+	aclAccessResult uint
+
+	aclRuleSet struct {
+		Rules []aclRule `yaml:"rules"`
+
+		Allow []string `yaml:"allow"`
+		Deny  []string `yaml:"deny"`
+	}
+)
+
+const (
+	accessDunno aclAccessResult = iota
+	accessAllow
+	accessDeny
+)
+
+// --- ACL
+
+func (a acl) HasAccess(user string, groups []string, r *http.Request) bool {
+	var (
+		collectionAllow = map[string]bool{}
+		collectionDeny  = map[string]bool{}
+	)
+
+	for _, rs := range a.RuleSets {
+		if !rs.AppliesToRequest(r) {
+			continue
+		}
+
+		// Collect the allows from all matching rulesets
+		for _, a := range rs.Allow {
+			collectionAllow[a] = true
+		}
+
+		// Collect the denies from all matching rulesets
+		for _, d := range rs.Deny {
+			collectionDeny[d] = true
+		}
+	}
+
+	// Form lists from the collections
+	var allowed, denied []string
+
+	for k := range collectionAllow {
+		allowed = append(allowed, k)
+	}
+	for k := range collectionDeny {
+		denied = append(denied, k)
+	}
+
+	return a.checkAccess(user, groups, allowed, denied)
 }
 
-func (a aclRule) Validate() error {
-	if a.Field == "" {
-		return fmt.Errorf("Field is not set")
-	}
-
-	if a.IsPresent == nil && a.MatchRegex == nil && a.MatchString == nil {
-		return fmt.Errorf("No matcher (present, regexp, equals) is set")
-	}
-
-	if a.MatchRegex != nil {
-		if _, err := regexp.Compile(*a.MatchRegex); err != nil {
-			return fmt.Errorf("Regexp is invalid: %s", err)
+func (a acl) Validate() error {
+	for i, r := range a.RuleSets {
+		if err := r.Validate(); err != nil {
+			return fmt.Errorf("RuleSet on position %d is invalid: %s", i+1, err)
 		}
 	}
 
 	return nil
 }
 
+func (a acl) checkAccess(user string, groups, allowed, denied []string) bool {
+	if !str.StringInSlice(user, []string{"", "\x00"}) {
+		// The user is set to a non-anon user, we add the pseudo-group
+		// authenticated to the groups list the user has
+		groups = append(groups, groupAuthenticated)
+	} else {
+		// The user did match anon, therefore we set the pseudo-group
+		// for anonymous to be used in group matching
+		groups = []string{groupAnonymous}
+	}
+
+	// Quoting the documentation here:
+	// "There is a simple logic: Users before groups, denies before allows."
+
+	// Lets check the user
+	if str.StringInSlice(user, denied) {
+		// Explicit deny on the user, they're out!
+		return false
+	}
+
+	if str.StringInSlice(user, allowed) {
+		// Explicit allow on the user, they're in!
+		return true
+	}
+
+	// The user yielded no result, lets check the groups
+	for _, group := range groups {
+		if str.StringInSlice(a.fixGroupName(group), denied) {
+			// The group is denied access
+			return false
+		}
+
+		if str.StringInSlice(a.fixGroupName(group), allowed) {
+			// The group is allowed access
+			return true
+		}
+	}
+
+	// We found no match for the user and/or group. Last chance is
+	// no ruleset denied anonymous access and at least one ruleset
+	// enabled anonymous access
+	if !str.StringInSlice(groupAnonymous, denied) && str.StringInSlice(groupAnonymous, allowed) {
+		return true
+	}
+
+	// We found neither a user nor a group with access or deny config
+	// so we fall back to the default: No access.
+	return false
+}
+
+func (acl) fixGroupName(group string) string {
+	return "@" + strings.TrimLeft(group, "@")
+}
+
+// --- ACL Rule
+
+// AppliesToFields checks whether the given rule conditions matches
+// the given fields
 func (a aclRule) AppliesToFields(fields map[string]string) bool {
 	var field, value string
 
@@ -91,19 +202,50 @@ func (a aclRule) AppliesToFields(fields map[string]string) bool {
 	return true
 }
 
-type aclAccessResult uint
+func (a aclRule) Validate() error {
+	if a.Field == "" {
+		return fmt.Errorf("field is not set")
+	}
 
-const (
-	accessDunno aclAccessResult = iota
-	accessAllow
-	accessDeny
-)
+	if a.IsPresent == nil && a.MatchRegex == nil && a.MatchString == nil {
+		return fmt.Errorf("no matcher (present, regexp, equals) is set")
+	}
 
-type aclRuleSet struct {
-	Rules []aclRule `yaml:"rules"`
+	if a.MatchRegex != nil {
+		if _, err := regexp.Compile(*a.MatchRegex); err != nil {
+			return fmt.Errorf("regexp is invalid: %s", err)
+		}
+	}
 
-	Allow []string `yaml:"allow"`
-	Deny  []string `yaml:"deny"`
+	return nil
+}
+
+// --- ACL Rule Set
+
+// AppliesToRequest checks whether every rule in the aclRuleSet
+// matches the http.Request. If not this rule-set must not be applied
+// to the given request
+func (a aclRuleSet) AppliesToRequest(r *http.Request) bool {
+	fields := a.buildFieldSet(r)
+
+	for _, rule := range a.Rules {
+		if !rule.AppliesToFields(fields) {
+			// At least one rule does not match the request
+			return false
+		}
+	}
+
+	return true
+}
+
+func (a aclRuleSet) Validate() error {
+	for i, r := range a.Rules {
+		if err := r.Validate(); err != nil {
+			return fmt.Errorf("rule on position %d is invalid: %s", i+1, err)
+		}
+	}
+
+	return nil
 }
 
 func (a aclRuleSet) buildFieldSet(r *http.Request) map[string]string {
@@ -114,87 +256,4 @@ func (a aclRuleSet) buildFieldSet(r *http.Request) map[string]string {
 	}
 
 	return result
-}
-
-func (a aclRuleSet) HasAccess(user string, groups []string, r *http.Request) aclAccessResult {
-	fields := a.buildFieldSet(r)
-
-	for _, rule := range a.Rules {
-		if !rule.AppliesToFields(fields) {
-			// At least one rule does not match the request
-			return accessDunno
-		}
-	}
-
-	// All rules do apply to this request, we can judge
-
-	if str.StringInSlice(user, a.Deny) {
-		// Explicit deny, final result
-		return accessDeny
-	}
-
-	if str.StringInSlice(user, a.Allow) {
-		// Explicit allow, final result
-		return accessAllow
-	}
-
-	for _, group := range groups {
-		if str.StringInSlice("@"+group, a.Deny) {
-			// Deny through group, final result
-			return accessDeny
-		}
-
-		if str.StringInSlice("@"+group, a.Allow) {
-			// Allow through group, final result
-			return accessAllow
-		}
-	}
-
-	// Allow special group @_authenticated if any non-anonymous user is set
-	if str.StringInSlice("@_authenticated", a.Allow) && !str.StringInSlice(user, []string{"", "\x00"}) {
-		return accessAllow
-	}
-
-	if str.StringInSlice(groupAnonymous, a.Allow) {
-		return accessAllow
-	}
-
-	// Neither user nor group are handled
-	return accessDunno
-}
-
-func (a aclRuleSet) Validate() error {
-	for i, r := range a.Rules {
-		if err := r.Validate(); err != nil {
-			return fmt.Errorf("Rule on position %d is invalid: %s", i+1, err)
-		}
-	}
-
-	return nil
-}
-
-type acl struct {
-	RuleSets []aclRuleSet `yaml:"rule_sets"`
-}
-
-func (a acl) Validate() error {
-	for i, r := range a.RuleSets {
-		if err := r.Validate(); err != nil {
-			return fmt.Errorf("RuleSet on position %d is invalid: %s", i+1, err)
-		}
-	}
-
-	return nil
-}
-
-func (a acl) HasAccess(user string, groups []string, r *http.Request) bool {
-	result := accessDunno
-
-	for _, rs := range a.RuleSets {
-		if intermediateResult := rs.HasAccess(user, groups, r); intermediateResult > result {
-			result = intermediateResult
-		}
-	}
-
-	return result == accessAllow
 }

@@ -3,11 +3,14 @@ package main
 import (
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
 	aclTestUser   = "test"
 	aclTestGroups = []string{"group_a", "group_b"}
+	ptrBoolTrue   = func(v bool) *bool { return &v }(true)
 )
 
 func aclTestRequest(headers map[string]string) *http.Request {
@@ -49,18 +52,14 @@ func TestRuleSetMatcher(t *testing.T) {
 		"field_c": "expected",
 	}
 
-	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) != accessAllow {
-		t.Error("Access was denied")
-	}
+	assert.True(t, r.AppliesToRequest(aclTestRequest(fields)))
 
 	delete(fields, "field_c")
-	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) != accessDunno {
-		t.Error("Access was not unknown")
-	}
+	assert.False(t, r.AppliesToRequest(aclTestRequest(fields)))
 }
 
 func TestGroupAuthenticated(t *testing.T) {
-	r := aclRuleSet{
+	a := acl{RuleSets: []aclRuleSet{{
 		Rules: []aclRule{
 			{
 				Field:       "field_a",
@@ -68,31 +67,21 @@ func TestGroupAuthenticated(t *testing.T) {
 			},
 		},
 		Allow: []string{"@_authenticated"},
-	}
+	}}}
 	fields := map[string]string{
 		"field_a": "expected",
 	}
 
-	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) != accessAllow {
-		t.Error("Access was denied")
-	}
+	assert.True(t, a.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)))
+	assert.False(t, a.HasAccess("\x00", nil, aclTestRequest(fields)), "access to anon user")
+	assert.False(t, a.HasAccess("", nil, aclTestRequest(fields)), "access to empty user")
 
-	if r.HasAccess("\x00", nil, aclTestRequest(fields)) == accessAllow {
-		t.Error("Access was allowed to unauth-user")
-	}
-
-	if r.HasAccess("", nil, aclTestRequest(fields)) == accessAllow {
-		t.Error("Access was allowed to empty user")
-	}
-
-	r.Allow = []string{"testgroup"}
-	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) == accessAllow {
-		t.Error("Access was allowed")
-	}
+	a.RuleSets[0].Allow = []string{"testgroup"}
+	assert.False(t, a.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)))
 }
 
 func TestAnonymousAccess(t *testing.T) {
-	r := aclRuleSet{
+	a := acl{RuleSets: []aclRuleSet{{
 		Rules: []aclRule{
 			{
 				Field:       "field_a",
@@ -100,22 +89,40 @@ func TestAnonymousAccess(t *testing.T) {
 			},
 		},
 		Allow: []string{groupAnonymous},
-	}
+	}}}
 	fields := map[string]string{
 		"field_a": "expected",
 	}
 
-	if r.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)) != accessAllow {
-		t.Error("Access was denied")
+	assert.True(t, a.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)))
+	assert.True(t, a.HasAccess("", nil, aclTestRequest(fields)), "access to empty user")
+	assert.True(t, a.HasAccess("\x00", nil, aclTestRequest(fields)), "access to anon user")
+}
+
+func TestAnonymousAccessExplicitDeny(t *testing.T) {
+	a := acl{
+		RuleSets: []aclRuleSet{
+			{
+				Rules: []aclRule{{Field: "field_a", IsPresent: ptrBoolTrue}},
+				Allow: []string{groupAnonymous},
+			},
+			{
+				Rules: []aclRule{{Field: "field_b", IsPresent: ptrBoolTrue}},
+				Allow: []string{"somerandomuser"},
+				Deny:  []string{groupAnonymous},
+			},
+		},
 	}
 
-	if r.HasAccess("", nil, aclTestRequest(fields)) != accessAllow {
-		t.Error("Access without user was denied")
-	}
-
-	if r.HasAccess("\x00", nil, aclTestRequest(fields)) != accessAllow {
-		t.Error("Access with special unauth-user was denied")
-	}
+	assert.True(t,
+		a.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(map[string]string{"field_a": ""})),
+		"anon access with only allowed field should be possible")
+	assert.False(t,
+		a.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(map[string]string{"field_b": ""})),
+		"anon access with only denied field should not be possible")
+	assert.False(t,
+		a.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(map[string]string{"field_a": "", "field_b": ""})),
+		"anon access with one allowed and one denied field should not be possible")
 }
 
 func TestInvertedRegexMatcher(t *testing.T) {
