@@ -6,11 +6,12 @@ WORKDIR /go/src/github.com/Luzifer/nginx-sso
 ENV CGO_ENABLED=0
 
 RUN set -ex \
- && apk add --update \
+ && apk add --no-cache \
       git \
  && go install \
       -ldflags "-X main.version=$(git describe --tags || git rev-parse --short HEAD || echo dev)" \
       -mod=readonly
+
 
 FROM alpine
 
@@ -29,6 +30,8 @@ COPY --from=builder /go/src/github.com/Luzifer/nginx-sso/frontend/*       /usr/l
 
 EXPOSE 8082
 VOLUME ["/data"]
+
+USER 1000:1000
 
 ENTRYPOINT ["/usr/local/bin/docker-start.sh"]
 CMD ["--"]
