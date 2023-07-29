@@ -1,0 +1,78 @@
+---
+
+name: test-and-build
+on:
+  push:
+    branches: ['*']
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  test-and-build:
+    defaults:
+      run:
+        shell: bash
+
+    container:
+      image: luzifer/archlinux
+      env:
+        CGO_ENABLED: 0
+        GOPATH: /go
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Enable custom AUR package repo
+        run: echo -e "[luzifer]\nSigLevel = Never\nServer = https://archrepo.hub.luzifer.io/\$arch" >>/etc/pacman.conf
+
+      - name: Install required packages
+        run: |
+          pacman -Syy --noconfirm \
+            awk \
+            curl \
+            diffutils \
+            git \
+            go \
+            golangci-lint-bin \
+            make \
+            tar \
+            trivy \
+            unzip \
+            which \
+            zip
+
+      - uses: actions/checkout@v3
+
+      - name: Marking workdir safe
+        run: git config --global --add safe.directory /__w/nginx-sso/nginx-sso
+
+      - name: Lint and test code
+        run: |
+          go test -v ./...
+
+      - name: Build release
+        run: make publish
+        env:
+          FORCE_SKIP_UPLOAD: 'true'
+          MOD_MODE: readonly
+          NO_TESTS: 'true'
+          PACKAGES: '.'
+
+      - name: Execute Trivy scan
+        run: make trivy
+
+      - name: Extract changelog
+        run: 'awk "/^#/ && ++c==2{exit}; /^#/f" "History.md" | tail -n +2 >release_changelog.md'
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          artifacts: '.build/*'
+          bodyFile: release_changelog.md
+          draft: false
+          generateReleaseNotes: false
+
+...
