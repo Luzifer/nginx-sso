@@ -1,3 +1,22 @@
+# 0.27.0 / 2023-07-29
+
+  * New Features
+    * Add support for K8s ingress-nginx "rd" URL parameter
+    * [#78] Allow for sprig templating in configuration file
+
+  * Improvements
+    * Move Docker image to use non-root user
+    * Rewrite ACL logic, add support for multiple rules to be applied to the same request and therefore also denying anonymous access to certain requests while allowing it on the general site
+
+  * Internal Changes
+    * Update to Go 1.20, update dependencies
+    * Update go-oidc to v3
+    * [ci] Switch to Github Actions
+
+Please note this release makes changes how the ACL is applied. The test cases were (functionally) not altered, so the behavior **should** not change, though you really should test whether your rules are still working fine.
+
+Also if you're using the Docker image please note the default user in the image has changed from root (ID 0) to an unprivileged user (ID 1000). You might need to adjust your config to be read or overwrite the Docker user if you relied on it to be the root user.
+
 # 0.26.0 / 2022-12-21
 
   * Add health-endpoint, fix copy on empty dir
