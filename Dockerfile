@@ -21,7 +21,9 @@ RUN set -ex \
  && apk --no-cache add \
       bash \
       ca-certificates \
-      dumb-init
+      dumb-init \
+ && mkdir /data \
+ && chown -R 1000:1000 /data
 
 COPY --from=builder /go/bin/nginx-sso                                     /usr/local/bin/
 COPY --from=builder /go/src/github.com/Luzifer/nginx-sso/config.yaml      /usr/local/share/nginx-sso/
