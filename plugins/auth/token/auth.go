@@ -7,7 +7,7 @@ import (
 	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/nginx-sso/plugins"
 
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type AuthToken struct {

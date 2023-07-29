@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/gorilla/sessions"
 

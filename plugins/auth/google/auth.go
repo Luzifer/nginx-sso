@@ -11,7 +11,7 @@ import (
 	"golang.org/x/oauth2/google"
 	v2 "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/gorilla/sessions"
 	"github.com/pkg/errors"

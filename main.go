@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -10,13 +10,15 @@ import (
 	"path"
 	"strings"
 	"syscall"
+	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/flosch/pongo2"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/Luzifer/nginx-sso/plugins"
 	"github.com/Luzifer/rconfig/v2"
@@ -58,6 +60,7 @@ var (
 )
 
 func init() {
+	rconfig.AutoEnv(true)
 	if err := rconfig.Parse(&cfg); err != nil {
 		log.WithError(err).Fatal("Unable to parse commandline options")
 	}
@@ -83,20 +86,30 @@ func init() {
 }
 
 func loadConfiguration() ([]byte, error) {
-	yamlSource, err := ioutil.ReadFile(cfg.ConfigFile)
+	yamlSource, err := os.ReadFile(cfg.ConfigFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "Unable to read configuration file")
+		return nil, errors.Wrap(err, "reading configuration file")
 	}
 
-	if err = yaml.Unmarshal(yamlSource, &mainCfg); err != nil {
-		return nil, errors.Wrap(err, "Unable to load configuration file")
+	tpl, err := template.New("config").Funcs(sprig.FuncMap()).Parse(string(yamlSource))
+	if err != nil {
+		return nil, errors.Wrap(err, "parsing config as template")
+	}
+
+	buf := new(bytes.Buffer)
+	if err = tpl.Execute(buf, nil); err != nil {
+		return nil, errors.Wrap(err, "executing config as template")
+	}
+
+	if err = yaml.Unmarshal(buf.Bytes(), &mainCfg); err != nil {
+		return nil, errors.Wrap(err, "loading configuration file")
 	}
 
 	if cfg.AuthKey != "" {
 		mainCfg.Cookie.AuthKey = cfg.AuthKey
 	}
 
-	return yamlSource, nil
+	return buf.Bytes(), nil
 }
 
 func initializeModules(yamlSource []byte) error {

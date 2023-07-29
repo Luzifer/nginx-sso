@@ -6,7 +6,7 @@ import (
 
 	crowd "github.com/jda/go-crowd"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/Luzifer/nginx-sso/plugins"
 )

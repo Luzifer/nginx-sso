@@ -6,7 +6,7 @@ import (
 
 	"github.com/GeertJohan/yubigo"
 	"github.com/gorilla/sessions"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/nginx-sso/plugins"

@@ -6,7 +6,7 @@ import (
 
 	"github.com/GeertJohan/yubigo"
 	"github.com/pkg/errors"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/Luzifer/nginx-sso/plugins"
 )

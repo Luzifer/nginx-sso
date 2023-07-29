@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	ldap "gopkg.in/ldap.v2"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/gorilla/sessions"
 
