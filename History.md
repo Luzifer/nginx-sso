@@ -1,3 +1,7 @@
+# 0.27.2 / 2023-10-14
+
+  * Update dependencies
+
 # 0.27.1 / 2023-07-29
 
   * [#79] Fix Docker image broken by user change
