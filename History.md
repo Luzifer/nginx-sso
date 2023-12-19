@@ -1,3 +1,7 @@
+# 0.27.3 / 2023-12-19
+
+  * Update dependencies
+
 # 0.27.2 / 2023-10-14
 
   * Update dependencies
