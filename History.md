@@ -1,3 +1,7 @@
+# 0.27.4 / 2024-12-12
+
+  * Update Go dependencies
+
 # 0.27.3 / 2023-12-19
 
   * Update dependencies
