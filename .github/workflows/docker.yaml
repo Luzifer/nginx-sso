@@ -1,0 +1,50 @@
+name: CI Workflow
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  docker-publish:
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+      packages: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          show-progress: false
+
+      - name: Extract Docker Image Name
+        id: image
+        run: |
+          echo "name=ghcr.io/${GITHUB_REPOSITORY,,}:latest" >>${GITHUB_OUTPUT}
+
+      - name: Log into registry
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker Build
+        run: |
+          docker buildx build \
+            --no-cache \
+            --pull \
+            --tag ${{ steps.image.outputs.name }} \
+            .
+
+      - name: Docker Push
+        run: |
+          docker push ${{ steps.image.outputs.name }}
+        if: ${{ github.ref == 'refs/heads/master' }}
