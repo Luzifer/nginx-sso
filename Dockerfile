@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.25-alpine as builder
 
 ADD . /go/src/github.com/Luzifer/nginx-sso
 WORKDIR /go/src/github.com/Luzifer/nginx-sso
@@ -13,7 +13,7 @@ RUN set -ex \
       -mod=readonly
 
 
-FROM alpine
+FROM alpine:3.23
 
 LABEL maintainer "Knut Ahlers <knut@ahlers.me>"
 
