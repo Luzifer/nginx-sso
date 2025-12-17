@@ -1,5 +1,3 @@
----
-
 name: test-and-build
 on:
   push:
@@ -16,7 +14,7 @@ jobs:
         shell: bash
 
     container:
-      image: luzifer/archlinux
+      image: ghcr.io/luzifer-docker/action-env:master@sha256:d85a33a5083e67e9264c2ef69296b98958b2061317184fc9389cceae3ab80d3b
       env:
         CGO_ENABLED: 0
         GOPATH: /go
@@ -24,26 +22,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Enable custom AUR package repo
-        run: echo -e "[luzifer]\nSigLevel = Never\nServer = https://archrepo.hub.luzifer.io/\$arch" >>/etc/pacman.conf
-
-      - name: Install required packages
-        run: |
-          pacman -Syy --noconfirm \
-            awk \
-            curl \
-            diffutils \
-            git \
-            go \
-            golangci-lint-bin \
-            make \
-            tar \
-            trivy \
-            unzip \
-            which \
-            zip
-
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Marking workdir safe
         run: git config --global --add safe.directory /__w/nginx-sso/nginx-sso
@@ -74,5 +53,3 @@ jobs:
           bodyFile: release_changelog.md
           draft: false
           generateReleaseNotes: false
-
-...
