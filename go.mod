@@ -2,7 +2,7 @@ module github.com/Luzifer/nginx-sso
 
 go 1.23
 
-toolchain go1.23.4
+toolchain go1.25.5
 
 require (
 	github.com/GeertJohan/yubigo v0.0.0-20190917122436-175bc097e60e
