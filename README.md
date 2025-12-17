@@ -1,7 +1,10 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/Luzifer/nginx-sso)](https://goreportcard.com/report/github.com/Luzifer/nginx-sso)
-![](https://badges.fyi/github/license/Luzifer/nginx-sso)
-![](https://badges.fyi/github/downloads/Luzifer/nginx-sso)
-![](https://badges.fyi/github/latest-release/Luzifer/nginx-sso)
+![GitHub License](https://img.shields.io/github/license/Luzifer/nginx-sso)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Luzifer/nginx-sso/total)
+![GitHub Release](https://img.shields.io/github/v/release/Luzifer/nginx-sso)
+![Static Badge](https://img.shields.io/badge/Project_Status-Maintenance--Only-orange)
+
+> [!IMPORTANT]  
+> This project is in "Maintenance-Only" mode. No additional features will be added, security update are provided for now.
 
 # Luzifer / nginx-sso
 
