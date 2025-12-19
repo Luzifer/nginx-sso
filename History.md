@@ -1,3 +1,10 @@
+# 0.27.6 / 2025-12-19
+
+> [!NOTE]
+> In case you were using the `docker.io/luzifer/nginx-sso:<version>` images, please switch to `ghcr.io/luzifer/nginx-sso:<version>` for releases starting with this release.
+
+  * fix(ci): publish properly versioned images
+
 # 0.27.5 / 2025-12-17
 
   * Update Go dependencies
