@@ -17,7 +17,7 @@ require (
 	github.com/jda/go-crowd v0.0.0-20180225080536-9c6f17811dc6
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.5.0
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.46.0
 	golang.org/x/oauth2 v0.34.0
