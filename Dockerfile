@@ -1,4 +1,4 @@
-FROM golang:1.25-alpine@sha256:9f7db8d8d90904f8347c1f833dea4c51f9e66d54aab87e15ba128bb03f2ac82a as builder
+FROM golang:1.25-alpine@sha256:660f0b83cf50091e3777e4730ccc0e63e83fea2c420c872af5c60cb357dcafb2 as builder
 
 ADD . /go/src/github.com/Luzifer/nginx-sso
 WORKDIR /go/src/github.com/Luzifer/nginx-sso
