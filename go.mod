@@ -7,7 +7,7 @@ toolchain go1.25.7
 require (
 	github.com/GeertJohan/yubigo v0.0.0-20190917122436-175bc097e60e
 	github.com/Luzifer/go_helpers/v2 v2.25.0
-	github.com/Luzifer/rconfig/v2 v2.6.0
+	github.com/Luzifer/rconfig/v2 v2.6.1
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/duosecurity/duo_api_golang v0.0.0-20250430191550-ac36954387e7
@@ -57,6 +57,7 @@ require (
 	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect

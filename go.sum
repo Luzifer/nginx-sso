@@ -10,8 +10,8 @@ github.com/GeertJohan/yubigo v0.0.0-20190917122436-175bc097e60e h1:Bqtt5C+uVk+vH
 github.com/GeertJohan/yubigo v0.0.0-20190917122436-175bc097e60e/go.mod h1:njRCDrl+1RQ/A/+KVU8Ho2EWAxUSkohOWczdW3dzDG0=
 github.com/Luzifer/go_helpers/v2 v2.25.0 h1:k1J4gd1+BfuokTDoWgcgib9P5mdadjzKEgbtKSVe46k=
 github.com/Luzifer/go_helpers/v2 v2.25.0/go.mod h1:KSVUdAJAav5cWGyB5oKGxmC27HrKULVTOxwPS/Kr+pc=
-github.com/Luzifer/rconfig/v2 v2.6.0 h1:ZKgsO2Wt/XZXawuAZCDkW7xszxZ8hQDTV1Wm63Jvnqk=
-github.com/Luzifer/rconfig/v2 v2.6.0/go.mod h1:CxISRwCV2WjO5gnUnaRGDq17u1M3TvmFgzJLr87ejtc=
+github.com/Luzifer/rconfig/v2 v2.6.1 h1:n8iAygRdri/yRqhOYtU80TcWyrzuEpeIhBmdseVtZo8=
+github.com/Luzifer/rconfig/v2 v2.6.1/go.mod h1:EmQawSlworIE4tMTHdSCHu1exXG8peNqj7tJtrYYleU=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
@@ -112,6 +112,8 @@ go.opentelemetry.io/otel/sdk/metric v1.39.0 h1:cXMVVFVgsIf2YL6QkRF4Urbr/aMInf+2W
 go.opentelemetry.io/otel/sdk/metric v1.39.0/go.mod h1:xq9HEVH7qeX69/JnwEfp6fVq5wosJsY1mt4lLfYdVew=
 go.opentelemetry.io/otel/trace v1.39.0 h1:2d2vfpEDmCJ5zVYz7ijaJdOF59xLomrvj7bjt6/qCJI=
 go.opentelemetry.io/otel/trace v1.39.0/go.mod h1:88w4/PnZSazkGzz/w84VHpQafiU4EtqqlVdxWy+rNOA=
+go.yaml.in/yaml/v3 v3.0.4 h1:tfq32ie2Jv2UxXFdLJdh3jXuOzWiL1fo0bu/FbuKpbc=
+go.yaml.in/yaml/v3 v3.0.4/go.mod h1:DhzuOOF2ATzADvBadXxruRBLzYTpT36CKvDb3+aBEFg=
 golang.org/x/crypto v0.47.0 h1:V6e3FRj+n4dbpw86FJ8Fv7XVOql7TEwpHapKoMJ/GO8=
 golang.org/x/crypto v0.47.0/go.mod h1:ff3Y9VzzKbwSSEzWqJsJVBnWmRwRSHt/6Op5n9bQc4A=
 golang.org/x/net v0.49.0 h1:eeHFmOGUTtaaPSGNmjBKpbng9MulQsJURQUAfUwY++o=
