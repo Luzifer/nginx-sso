@@ -2,13 +2,13 @@ package yubikey
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/GeertJohan/yubigo"
 	"github.com/gorilla/sessions"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
@@ -87,7 +87,7 @@ func (a AuthYubikey) DetectUser(res http.ResponseWriter, r *http.Request) (strin
 
 	groups := []string{}
 	for group, users := range a.Groups {
-		if str.StringInSlice(user, users) {
+		if slices.Contains(users, user) {
 			groups = append(groups, group)
 		}
 	}

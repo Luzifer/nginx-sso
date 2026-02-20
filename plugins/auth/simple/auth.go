@@ -2,6 +2,7 @@ package simple
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/gorilla/sessions"
 
-	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
@@ -108,7 +108,7 @@ func (a AuthSimple) DetectUser(res http.ResponseWriter, r *http.Request) (string
 
 	groups := []string{}
 	for group, users := range a.Groups {
-		if str.StringInSlice(user, users) {
+		if slices.Contains(users, user) {
 			groups = append(groups, group)
 		}
 	}

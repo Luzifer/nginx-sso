@@ -7,13 +7,12 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/pkg/errors"
-
-	"github.com/Luzifer/go_helpers/v2/str"
 )
 
 type auditEvent string
@@ -40,7 +39,7 @@ func (a *auditLogger) Log(event auditEvent, r *http.Request, extraFields map[str
 		return nil
 	}
 
-	if !str.StringInSlice(string(event), a.Events) {
+	if !slices.Contains(a.Events, string(event)) {
 		return nil
 	}
 
@@ -106,11 +105,11 @@ func (a *auditLogger) submitLog(target string, event map[string]interface{}) err
 }
 
 func (a *auditLogger) submitLogFile(filename string, event map[string]interface{}) error {
-	if err := os.MkdirAll(path.Dir(filename), 0600); err != nil {
+	if err := os.MkdirAll(path.Dir(filename), 0o600); err != nil {
 		return errors.Wrap(err, "Unable to create required paths")
 	}
 
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)
 	if err != nil {
 		return errors.Wrap(err, "Unable to open audit file")
 	}

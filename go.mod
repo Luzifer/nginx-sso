@@ -6,7 +6,6 @@ toolchain go1.26.0
 
 require (
 	github.com/GeertJohan/yubigo v0.0.0-20190917122436-175bc097e60e
-	github.com/Luzifer/go_helpers/v2 v2.25.2
 	github.com/Luzifer/rconfig/v2 v2.6.1
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/coreos/go-oidc/v3 v3.17.0

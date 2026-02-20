@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 
 	"golang.org/x/oauth2"
@@ -16,7 +17,6 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/pkg/errors"
 
-	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/nginx-sso/plugins"
 )
 
@@ -234,12 +234,12 @@ func (a *AuthGoogleOAuth) getUserFromToken(ctx context.Context, token *oauth2.To
 		return "", errors.Wrap(err, "Unable to fetch token-info")
 	}
 
-	var mailParts = strings.Split(tok.Email, "@")
+	mailParts := strings.Split(tok.Email, "@")
 	if len(mailParts) != 2 {
 		return "", errors.New("Invalid email returned")
 	}
 
-	if len(a.RequireDomains) > 0 && !str.StringInSlice(mailParts[1], a.RequireDomains) {
+	if len(a.RequireDomains) > 0 && !slices.Contains(a.RequireDomains, mailParts[1]) {
 		// E-Mail domain is enforced, ignore all other users
 		return "", plugins.ErrNoValidUserFound
 	}

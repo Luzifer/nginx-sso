@@ -2,9 +2,9 @@ package token
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 
-	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/nginx-sso/plugins"
 
 	yaml "gopkg.in/yaml.v3"
@@ -79,7 +79,7 @@ func (a AuthToken) DetectUser(res http.ResponseWriter, r *http.Request) (string,
 
 	groups := []string{}
 	for group, users := range a.Groups {
-		if str.StringInSlice(user, users) {
+		if slices.Contains(users, user) {
 			groups = append(groups, group)
 		}
 	}

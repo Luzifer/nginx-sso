@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
-
-	"github.com/Luzifer/go_helpers/v2/str"
 )
 
 const (
@@ -91,7 +90,7 @@ func (a acl) Validate() error {
 }
 
 func (a acl) checkAccess(user string, groups, allowed, denied []string) bool {
-	if !str.StringInSlice(user, []string{"", "\x00"}) {
+	if !slices.Contains([]string{"", "\x00"}, user) {
 		// The user is set to a non-anon user, we add the pseudo-group
 		// authenticated to the groups list the user has
 		groups = append(groups, groupAuthenticated)
@@ -105,24 +104,24 @@ func (a acl) checkAccess(user string, groups, allowed, denied []string) bool {
 	// "There is a simple logic: Users before groups, denies before allows."
 
 	// Lets check the user
-	if str.StringInSlice(user, denied) {
+	if slices.Contains(denied, user) {
 		// Explicit deny on the user, they're out!
 		return false
 	}
 
-	if str.StringInSlice(user, allowed) {
+	if slices.Contains(allowed, user) {
 		// Explicit allow on the user, they're in!
 		return true
 	}
 
 	// The user yielded no result, lets check the groups
 	for _, group := range groups {
-		if str.StringInSlice(a.fixGroupName(group), denied) {
+		if slices.Contains(denied, a.fixGroupName(group)) {
 			// The group is denied access
 			return false
 		}
 
-		if str.StringInSlice(a.fixGroupName(group), allowed) {
+		if slices.Contains(allowed, a.fixGroupName(group)) {
 			// The group is allowed access
 			return true
 		}
@@ -131,7 +130,7 @@ func (a acl) checkAccess(user string, groups, allowed, denied []string) bool {
 	// We found no match for the user and/or group. Last chance is
 	// no ruleset denied anonymous access and at least one ruleset
 	// enabled anonymous access
-	if !str.StringInSlice(groupAnonymous, denied) && str.StringInSlice(groupAnonymous, allowed) {
+	if !slices.Contains(denied, groupAnonymous) && slices.Contains(allowed, groupAnonymous) {
 		return true
 	}
 
