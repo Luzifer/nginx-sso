@@ -21,7 +21,7 @@ require (
 	golang.org/x/crypto v0.49.0
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.271.0
-	gopkg.in/ldap.v2 v2.5.1
+	gopkg.in/ldap.v3 v3.4.12
 	gopkg.in/yaml.v3 v3.0.1
 )
 
