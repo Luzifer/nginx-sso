@@ -9,7 +9,7 @@ require (
 	github.com/Luzifer/rconfig/v2 v2.6.1
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/coreos/go-oidc/v3 v3.17.0
-	github.com/duosecurity/duo_api_golang v0.0.0-20250430191550-ac36954387e7
+	github.com/duosecurity/duo_api_golang v0.2.0
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
 	github.com/gorilla/context v1.1.2
 	github.com/gorilla/sessions v1.4.0
