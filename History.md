@@ -1,3 +1,14 @@
+# 0.27.7 / 2026-04-08
+
+  * chore: replace go\_helpers/v2 monolith
+  * fix(deps): update module github.com/duosecurity/duo\_api\_golang to v0.2.0
+  * fix(deps): update module github.com/luzifer/rconfig/v2 to v2.6.1
+  * fix(deps): update module github.com/sirupsen/logrus to v1.9.4
+  * fix(deps): update module golang.org/x/crypto to v0.49.0
+  * fix(deps): update module golang.org/x/oauth2 to v0.36.0
+  * fix(deps): update module google.golang.org/api to v0.274.0
+  * fix(sec): update indirect dependencies with vulnerabilities
+
 # 0.27.6 / 2025-12-19
 
 > [!NOTE]
