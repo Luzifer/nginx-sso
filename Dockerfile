@@ -13,7 +13,7 @@ RUN set -ex \
       -mod=readonly
 
 
-FROM alpine:3.23@sha256:c69a6ff7c24d1ffa913798501d0e7104e0e9764e28eb44a930939f91ef829e64
+FROM alpine:3.23@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11
 
 LABEL maintainer "Knut Ahlers <knut@ahlers.me>"
 
