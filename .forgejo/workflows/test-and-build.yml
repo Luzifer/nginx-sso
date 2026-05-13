@@ -1,0 +1,34 @@
+name: test-and-build
+
+on:
+  push: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    defaults:
+      run:
+        shell: bash
+
+    container:
+      image: ghcr.io/luzifer-docker/action-env:master@sha256:0be8e077d92a8bec0e0ff1a8f2703b5b5d0b24127f5456d3c65b6511cb3c5572
+      env:
+        CGO_ENABLED: 0
+        GOPATH: /go
+
+    runs-on: forgejo
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Lint and test code
+        run: |
+          go test -v ./...
+
+      - name: Build Locally
+        run: go build .
+
+      - name: Execute Trivy scan
+        run: make trivy
