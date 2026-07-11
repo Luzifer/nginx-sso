@@ -8,7 +8,7 @@ require (
 	github.com/GeertJohan/yubigo v0.0.0-20190917122436-175bc097e60e
 	github.com/Luzifer/rconfig/v2 v2.6.2
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/coreos/go-oidc/v3 v3.19.0
+	github.com/coreos/go-oidc/v3 v3.20.0
 	github.com/duosecurity/duo_api_golang v0.2.0
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
 	github.com/gorilla/context v1.1.2
