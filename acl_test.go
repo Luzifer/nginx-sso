@@ -80,6 +80,20 @@ func TestGroupAuthenticated(t *testing.T) {
 	assert.False(t, a.HasAccess(aclTestUser, aclTestGroups, aclTestRequest(fields)))
 }
 
+func TestGroupDenyTakesPrecedenceOverAllow(t *testing.T) {
+	a := acl{RuleSets: []aclRuleSet{{
+		Allow: []string{"@staff"},
+		Deny:  []string{"@contractors"},
+	}}}
+
+	for _, groups := range [][]string{
+		{"staff", "contractors"},
+		{"contractors", "staff"},
+	} {
+		assert.False(t, a.HasAccess("alice", groups, aclTestRequest(nil)))
+	}
+}
+
 func TestAnonymousAccess(t *testing.T) {
 	a := acl{RuleSets: []aclRuleSet{{
 		Rules: []aclRule{

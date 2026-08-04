@@ -120,7 +120,9 @@ func (a acl) checkAccess(user string, groups, allowed, denied []string) bool {
 			// The group is denied access
 			return false
 		}
+	}
 
+	for _, group := range groups {
 		if slices.Contains(allowed, a.fixGroupName(group)) {
 			// The group is allowed access
 			return true
