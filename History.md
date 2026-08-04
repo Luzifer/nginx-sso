@@ -1,3 +1,14 @@
+# 0.27.8 / 2026-08-04
+
+> [!IMPORTANT]
+> This version resolves an ACL authorization issue (GHSA-8vcm-4gq3-w9fr). Users are advised to update promptly.
+
+  * fix: enforce ACL group deny precedence (GHSA-8vcm-4gq3-w9fr)
+  * fix(deps): update module github.com/coreos/go-oidc/v3 to v3.20.0 (#97)
+  * fix(deps): update module github.com/luzifer/rconfig/v2 to v2.6.2
+  * fix(deps): update module golang.org/x/crypto to v0.54.0 (#98)
+  * fix(deps): update module google.golang.org/api to v0.291.0 (#103)
+
 # 0.27.7 / 2026-04-08
 
   * chore: replace go\_helpers/v2 monolith
