@@ -1,6 +1,6 @@
 module github.com/Luzifer/nginx-sso
 
-go 1.25.8
+go 1.26.0
 
 toolchain go1.27.0
 
@@ -18,7 +18,7 @@ require (
 	github.com/pquerna/otp v1.5.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/crypto v0.55.0
+	golang.org/x/crypto v0.56.0
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.295.0
 	gopkg.in/ldap.v2 v2.5.1
