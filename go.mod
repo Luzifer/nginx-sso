@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.58.0
 	golang.org/x/oauth2 v0.37.0
-	google.golang.org/api v0.301.0
+	google.golang.org/api v0.302.0
 	gopkg.in/ldap.v2 v2.5.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -40,7 +40,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/s2a-go v0.1.11 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.22 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.23 // indirect
 	github.com/googleapis/gax-go/v2 v2.26.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
@@ -58,7 +58,7 @@ require (
 	golang.org/x/net v0.61.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260928230214-8a89bd6388cc // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261005182115-fad411399dd8 // indirect
 	google.golang.org/grpc v1.84.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
