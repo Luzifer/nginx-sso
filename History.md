@@ -1,3 +1,22 @@
+# 0.27.9 / 2026-10-30
+
+> [!IMPORTANT]
+> This is the final release of **nginx-sso**. The project has been in maintenance mode for some time, and the increasing workload caused by purely AI-generated "reviews" has become unsustainable.
+> Therefore, this release marks the end of **all support**. Users are strongly advised to stop using nginx-sso, as no further updates, including security fixes, will be provided.
+
+  * chore(deps): update alpine docker tag to v3.24.3 (#147)
+  * chore(deps): update golang docker tag to v1.27.3 (#140)
+  * chore(deps): update go toolchain directive to v1.27.3 [security] (#142)
+  * chore(deps): update module github.com/go-jose/go-jose/v4 to v4.1.6 [security] (#149)
+  * chore(deps): update module golang.org/x/net to v0.62.0 [security] (#150)
+  * fix(deps): update module github.com/coreos/go-oidc/v3 to v3.21.0 (#124)
+  * fix(deps): update module github.com/duosecurity/duo_api_golang to v0.3.0 (#117)
+  * fix(deps): update module github.com/sirupsen/logrus to v1.10.2 (#118)
+  * fix(deps): update module github.com/stretchr/testify to v1.12.1 (#113)
+  * fix(deps): update module golang.org/x/crypto to v0.57.0 (#128)
+  * fix(deps): update module golang.org/x/oauth2 to v0.37.0 (#127)
+  * fix(deps): update module google.golang.org/api to v0.308.0 (#146)
+
 # 0.27.8 / 2026-08-04
 
 > [!IMPORTANT]
